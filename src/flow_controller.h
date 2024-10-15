@@ -1,7 +1,7 @@
 #ifndef FLOW_CONTROLLER_H
 #define FLOW_CONTROLLER_H
 
-#include "Constants.h"
+#include "constants.h"
 #include "PID_v1.h"
 #include "scale_controller.h"
 #include "valve_controller.h"

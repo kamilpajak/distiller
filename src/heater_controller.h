@@ -1,7 +1,7 @@
 #ifndef HEATER_CONTROLLER_H
 #define HEATER_CONTROLLER_H
 
-#include "Relay.h"
+#include "relay.h"
 
 /**
  * Class for controlling heaters.

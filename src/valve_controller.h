@@ -1,7 +1,7 @@
 #ifndef VALVE_CONTROLLER_H
 #define VALVE_CONTROLLER_H
 
-#include "Relay.h"
+#include "relay.h"
 #include "distillation_state_manager.h"
 #include <Arduino.h>
 
@@ -10,27 +10,32 @@
  */
 class ValveController {
 private:
-  Relay coolantValve;   /**< Relay for controlling the coolant valve. */
-  Relay mainValve;      /**< Relay for controlling the main valve. */
-  Relay foreshotsValve; /**< Relay for controlling the foreshots valve. */
-  Relay headsValve;     /**< Relay for controlling the heads valve. */
-  Relay heartsValve;    /**< Relay for controlling the hearts valve. */
-  Relay tailsValve;     /**< Relay for controlling the tails valve. */
+  Relay coolantValve;           /**< Relay for controlling the coolant valve. */
+  Relay mainValve;              /**< Relay for controlling the main valve. */
+  Relay earlyForeshotsValve;    /**< Relay for controlling the early foreshots valve. */
+  Relay lateForeshotsValve;     /**< Relay for controlling the late foreshots valve. */
+  Relay headsValve;             /**< Relay for controlling the heads valve. */
+  Relay heartsValve;            /**< Relay for controlling the hearts valve. */
+  Relay earlyTailsValve;        /**< Relay for controlling the early tails valve. */
+  Relay lateTailsValve;         /**< Relay for controlling the late tails valve. */
 
 public:
   /**
    * Constructor for the ValveController class.
    * @param coolantValve Relay for controlling the coolant valve.
    * @param mainValve Relay for controlling the main valve.
-   * @param foreshotsValve Relay for controlling the foreshots valve.
+   * @param earlyForeshotsValve Relay for controlling the early foreshots valve.
+   * @param lateForeshotsValve Relay for controlling the late foreshots valve.
    * @param headsValve Relay for controlling the heads valve.
    * @param heartsValve Relay for controlling the hearts valve.
-   * @param tailsValve Relay for controlling the tails valve.
+   * @param earlyTailsValve Relay for controlling the early tails valve.
+   * @param lateTailsValve Relay for controlling the late tails valve.
    */
-  ValveController(Relay coolantValve, Relay mainValve, Relay foreshotsValve, Relay headsValve, Relay heartsValve,
-                  Relay tailsValve)
-    : coolantValve(coolantValve), mainValve(mainValve), foreshotsValve(foreshotsValve), headsValve(headsValve),
-      heartsValve(heartsValve), tailsValve(tailsValve) {}
+  ValveController(Relay coolantValve, Relay mainValve, Relay earlyForeshotsValve, Relay lateForeshotsValve, 
+                  Relay headsValve, Relay heartsValve, Relay earlyTailsValve, Relay lateTailsValve)
+    : coolantValve(coolantValve), mainValve(mainValve), earlyForeshotsValve(earlyForeshotsValve), 
+      lateForeshotsValve(lateForeshotsValve), headsValve(headsValve), heartsValve(heartsValve), 
+      earlyTailsValve(earlyTailsValve), lateTailsValve(lateTailsValve) {}
 
   /**
    * Opens the distillate valve for the provided state and ensures all others are closed.
@@ -40,8 +45,11 @@ public:
     closeAllDistillateValves();
 
     switch (state) {
-    case FORESHOTS:
-      foreshotsValve.turnOn();
+    case EARLY_FORESHOTS:
+      earlyForeshotsValve.turnOn();
+      break;
+    case LATE_FORESHOTS:
+      lateForeshotsValve.turnOn();
       break;
     case HEADS:
       headsValve.turnOn();
@@ -49,8 +57,11 @@ public:
     case HEARTS:
       heartsValve.turnOn();
       break;
-    case TAILS:
-      tailsValve.turnOn();
+    case EARLY_TAILS:
+      earlyTailsValve.turnOn();
+      break;
+    case LATE_TAILS:
+      lateTailsValve.turnOn();
       break;
     default:
       // Handle invalid state
@@ -62,10 +73,12 @@ public:
    * Closes all distillate valves.
    */
   void closeAllDistillateValves() {
-    foreshotsValve.turnOff();
+    earlyForeshotsValve.turnOff();
+    lateForeshotsValve.turnOff();
     headsValve.turnOff();
     heartsValve.turnOff();
-    tailsValve.turnOff();
+    earlyTailsValve.turnOff();
+    lateTailsValve.turnOff();
   }
 
   /**

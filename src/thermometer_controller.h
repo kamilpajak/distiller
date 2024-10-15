@@ -1,7 +1,7 @@
 #ifndef THERMOMETER_CONTROLLER_H
 #define THERMOMETER_CONTROLLER_H
 
-#include "Thermometer.h"
+#include "thermometer.h"
 
 class ThermometerController {
 private:

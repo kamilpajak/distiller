@@ -6,7 +6,7 @@
 /**
  * Enum for distillation states.
  */
-enum DistillationState { OFF, HEAT_UP, FORESHOTS, HEADS, MIDDLINGS, HEARTS, TAILS };
+enum DistillationState { OFF, HEAT_UP, STABILIZING, EARLY_FORESHOTS, LATE_FORESHOTS, HEADS, HEARTS, EARLY_TAILS, LATE_TAILS, FINALIZING };
 
 class DistillationStateManager {
 private:
@@ -29,7 +29,7 @@ public:
 
   void setState(DistillationState newState) {
     currentState = newState;
-    if (newState == HEAT_UP) {
+    if (newState == HEAT_UP || newState == STABILIZING || newState == FINALIZING) {
       startTime = millis();
     }
   }

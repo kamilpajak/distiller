@@ -17,41 +17,48 @@ Thermometer nearTopThermometer(3);
 Thermometer topThermometer(4);
 
 // Creating Scale objects
-Scale foreshotsScale(5, 6);
-Scale headsScale(7, 8);
-Scale heartsScale(9, 10);
-Scale tailsScale(11, 12);
+Scale earlyForeshotsScale(5, 6);
+Scale lateForeshotsScale(7, 8);
+Scale headsScale(9, 10);
+Scale heartsScale(11, 12);
+Scale earlyTailsScale(13, 14);
+Scale lateTailsScale(15, 16);
 
 // Creating objects for HeaterController
 Relay heaterRelay1(13);
 Relay heaterRelay2(14);
 Relay heaterRelay3(15);
 
-// Creating objects for ValveController
-Relay valveRelay1(16);
-Relay valveRelay2(17);
-Relay valveRelay3(18);
-Relay valveRelay4(19);
-Relay valveRelay5(20);
-Relay valveRelay6(21);
+// Creating objects for ValveController (8 valves)
+Relay valveRelay1(16);  // earlyForeshotsValve
+Relay valveRelay2(17);  // lateForeshotsValve
+Relay valveRelay3(18);  // headsValve
+Relay valveRelay4(19);  // heartsValve
+Relay valveRelay5(20);  // earlyTailsValve
+Relay valveRelay6(21);  // lateTailsValve
+Relay valveRelay7(22);  // coolantValve
+Relay valveRelay8(23);  // mainValve
 
 // Creating object for DisplayController
 Lcd lcd(20, 4, 3);
 
 // Creating controllers
 HeaterController heaterController(heaterRelay1, heaterRelay2, heaterRelay3);
-ValveController valveController(valveRelay1, valveRelay2, valveRelay3, valveRelay4, valveRelay5, valveRelay6);
+ValveController valveController(valveRelay1, valveRelay2, valveRelay3, valveRelay4, valveRelay5, valveRelay6, valveRelay7, valveRelay8);
 ThermometerController thermometerController(mashTunThermometer, bottomThermometer, nearTopThermometer, topThermometer);
-ScaleController scaleController(foreshotsScale, headsScale, heartsScale, tailsScale);
+ScaleController scaleController(earlyForeshotsScale, lateForeshotsScale, headsScale, heartsScale, earlyTailsScale, lateTailsScale);
 FlowController flowController(&valveController, &scaleController);
 DisplayController displayController(lcd, thermometerController, scaleController, flowController);
 
 // Declare task identifiers
 taskid_t heatUpMashTaskId;
-taskid_t collectForeshotsTaskId;
+taskid_t waitForTemperatureStabilizationTaskId;
+taskid_t collectEarlyForeshotsTaskId;
+taskid_t collectLateForeshotsTaskId;
 taskid_t collectHeadsTaskId;
 taskid_t collectHeartsTaskId;
-taskid_t collectTailsTaskId;
+taskid_t collectEarlyTailsTaskId;
+taskid_t collectLateTailsTaskId;
 taskid_t finalizeDistillationTaskId;
 
 void updateAllThermometers() {
@@ -62,10 +69,12 @@ void updateAllThermometers() {
 }
 
 void updateAllScales() {
-  foreshotsScale.updateWeight();
+  earlyForeshotsScale.updateWeight();
+  lateForeshotsScale.updateWeight();
   headsScale.updateWeight();
   heartsScale.updateWeight();
-  tailsScale.updateWeight();
+  earlyTailsScale.updateWeight();
+  lateTailsScale.updateWeight();
 }
 
 bool hasReachedVolume(float distillateVolume) {
@@ -76,29 +85,43 @@ bool hasReachedVolume(float distillateVolume) {
 bool isTemperatureStabilized() { return bottomThermometer.getTemperature() - topThermometer.getTemperature() < 2; }
 
 void finalizeDistillation() {
-  DistillationStateManager::getInstance().setState(OFF);
+  DistillationStateManager::getInstance().setState(FINALIZING);
   static unsigned long startTime = 0;
   if (startTime == 0) {
     heaterController.setPower(0);
     startTime = millis();
-  } else if (millis() - startTime >= 120000) {
+  } else if (millis() - startTime >= 600000) {
     valveController.closeCoolantValve();
     valveController.closeAllDistillateValves();
     flowController.setAndControlFlowRate(0.0);
     startTime = 0;
+    DistillationStateManager::getInstance().setState(OFF);
     taskManager.cancelTask(finalizeDistillationTaskId);
   }
 }
 
-void collectTails() {
-  DistillationStateManager::getInstance().setState(TAILS);
+void collectLateTails() {
+  DistillationStateManager::getInstance().setState(LATE_TAILS);
   heaterController.setPower(2000);
   valveController.openCoolantValve();
-  valveController.openDistillateValve(TAILS);
+  valveController.openDistillateValve(LATE_TAILS);
   flowController.setAndControlFlowRate(33.0);
   if (mashTunThermometer.getTemperature() > 97.5) {
-    taskManager.cancelTask(collectTailsTaskId);
+    taskManager.cancelTask(collectLateTailsTaskId);
     finalizeDistillationTaskId = taskManager.scheduleFixedRate(1000, finalizeDistillation);
+  }
+}
+
+
+void collectEarlyTails() {
+  DistillationStateManager::getInstance().setState(EARLY_TAILS);
+  heaterController.setPower(2000);
+  valveController.openCoolantValve();
+  valveController.openDistillateValve(EARLY_TAILS);
+  flowController.setAndControlFlowRate(33.0);
+  if (hasReachedVolume(700) && isTemperatureStabilized()) {
+    taskManager.cancelTask(collectEarlyTailsTaskId);
+    collectLateTailsTaskId = taskManager.scheduleFixedRate(1000, collectLateTails);
   }
 }
 
@@ -115,11 +138,9 @@ void collectHearts() {
     }
   } else {
     taskManager.cancelTask(collectHeartsTaskId);
-    collectTailsTaskId = taskManager.scheduleFixedRate(1000, collectTails);
+    collectEarlyTailsTaskId = taskManager.scheduleFixedRate(1000, collectEarlyTails);
   }
 }
-
-// collectMiddlings()
 
 void collectHeads() {
   DistillationStateManager::getInstance().setState(HEADS);
@@ -127,21 +148,43 @@ void collectHeads() {
   valveController.openCoolantValve();
   valveController.openDistillateValve(HEADS);
   flowController.setAndControlFlowRate(33.0);
-  if (hasReachedVolume(700) && isTemperatureStabilized()) {
+  if (hasReachedVolume(900) && isTemperatureStabilized()) {
     taskManager.cancelTask(collectHeadsTaskId);
     collectHeartsTaskId = taskManager.scheduleFixedRate(1000, collectHearts);
   }
 }
 
-void collectForeshots() {
-  DistillationStateManager::getInstance().setState(FORESHOTS);
+void collectLateForeshots() {
+  DistillationStateManager::getInstance().setState(LATE_FORESHOTS);
   heaterController.setPower(2000);
   valveController.openCoolantValve();
-  valveController.openDistillateValve(FORESHOTS);
+  valveController.openDistillateValve(LATE_FORESHOTS);
+  flowController.setAndControlFlowRate(33.0);
+  if (hasReachedVolume(400) && isTemperatureStabilized()) {
+    taskManager.cancelTask(collectLateForeshotsTaskId);
+    collectHeadsTaskId = taskManager.scheduleFixedRate(1000, collectHeads);
+  }
+}
+
+void collectEarlyForeshots() {
+  DistillationStateManager::getInstance().setState(EARLY_FORESHOTS);
+  heaterController.setPower(2000);
+  valveController.openCoolantValve();
+  valveController.openDistillateValve(EARLY_FORESHOTS);
   flowController.setAndControlFlowRate(10.0);
   if (hasReachedVolume(200) && isTemperatureStabilized()) {
-    taskManager.cancelTask(collectForeshotsTaskId);
-    collectHeadsTaskId = taskManager.scheduleFixedRate(1000, collectHeads);
+    taskManager.cancelTask(collectEarlyForeshotsTaskId);
+    collectLateForeshotsTaskId = taskManager.scheduleFixedRate(1000, collectLateForeshots);
+  }
+}
+
+void waitForTemperatureStabilization() {
+  DistillationStateManager::getInstance().setState(STABILIZING);
+  heaterController.setPower(2000);
+
+  if (isTemperatureStabilized()) {
+    taskManager.cancelTask(waitForTemperatureStabilizationTaskId);
+    collectEarlyForeshotsTaskId = taskManager.scheduleFixedRate(1000, collectEarlyForeshots);
   }
 }
 
@@ -151,7 +194,7 @@ void heatUpMash() {
     heaterController.setPower(6000);
   } else {
     taskManager.cancelTask(heatUpMashTaskId);
-    collectForeshotsTaskId = taskManager.scheduleFixedRate(1000, collectForeshots);
+    waitForTemperatureStabilizationTaskId = taskManager.scheduleFixedRate(1000, waitForTemperatureStabilization);
   }
 }
 
