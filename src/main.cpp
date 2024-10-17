@@ -30,23 +30,25 @@ Relay heaterRelay2(14);
 Relay heaterRelay3(15);
 
 // Creating objects for ValveController (8 valves)
-Relay valveRelay1(16);  // earlyForeshotsValve
-Relay valveRelay2(17);  // lateForeshotsValve
-Relay valveRelay3(18);  // headsValve
-Relay valveRelay4(19);  // heartsValve
-Relay valveRelay5(20);  // earlyTailsValve
-Relay valveRelay6(21);  // lateTailsValve
-Relay valveRelay7(22);  // coolantValve
-Relay valveRelay8(23);  // mainValve
+Relay valveRelay1(16); // earlyForeshotsValve
+Relay valveRelay2(17); // lateForeshotsValve
+Relay valveRelay3(18); // headsValve
+Relay valveRelay4(19); // heartsValve
+Relay valveRelay5(20); // earlyTailsValve
+Relay valveRelay6(21); // lateTailsValve
+Relay valveRelay7(22); // coolantValve
+Relay valveRelay8(23); // mainValve
 
 // Creating object for DisplayController
 Lcd lcd(20, 4, 3);
 
 // Creating controllers
 HeaterController heaterController(heaterRelay1, heaterRelay2, heaterRelay3);
-ValveController valveController(valveRelay1, valveRelay2, valveRelay3, valveRelay4, valveRelay5, valveRelay6, valveRelay7, valveRelay8);
+ValveController valveController(valveRelay1, valveRelay2, valveRelay3, valveRelay4, valveRelay5, valveRelay6,
+                                valveRelay7, valveRelay8);
 ThermometerController thermometerController(mashTunThermometer, bottomThermometer, nearTopThermometer, topThermometer);
-ScaleController scaleController(earlyForeshotsScale, lateForeshotsScale, headsScale, heartsScale, earlyTailsScale, lateTailsScale);
+ScaleController scaleController(earlyForeshotsScale, lateForeshotsScale, headsScale, heartsScale, earlyTailsScale,
+                                lateTailsScale);
 FlowController flowController(&valveController, &scaleController);
 DisplayController displayController(lcd, thermometerController, scaleController, flowController);
 
@@ -61,6 +63,7 @@ taskid_t collectEarlyTailsTaskId;
 taskid_t collectLateTailsTaskId;
 taskid_t finalizeDistillationTaskId;
 
+// Update all thermometers
 void updateAllThermometers() {
   mashTunThermometer.updateTemperature();
   bottomThermometer.updateTemperature();
@@ -68,6 +71,7 @@ void updateAllThermometers() {
   topThermometer.updateTemperature();
 }
 
+// Update all scales
 void updateAllScales() {
   earlyForeshotsScale.updateWeight();
   lateForeshotsScale.updateWeight();
@@ -77,13 +81,16 @@ void updateAllScales() {
   lateTailsScale.updateWeight();
 }
 
+// Check if the target volume is reached
 bool hasReachedVolume(float distillateVolume) {
   return scaleController.getWeight(DistillationStateManager::getInstance().getState()) / ALCOHOL_DENSITY >=
          distillateVolume;
 }
 
+// Check if the temperature difference between bottom and top is small enough
 bool isTemperatureStabilized() { return bottomThermometer.getTemperature() - topThermometer.getTemperature() < 2; }
 
+// Finalize the distillation process
 void finalizeDistillation() {
   DistillationStateManager::getInstance().setState(FINALIZING);
   static unsigned long startTime = 0;
@@ -100,41 +107,56 @@ void finalizeDistillation() {
   }
 }
 
+// Collect late tails phase
 void collectLateTails() {
   DistillationStateManager::getInstance().setState(LATE_TAILS);
   heaterController.setPower(2000);
   valveController.openCoolantValve();
   valveController.openDistillateValve(LATE_TAILS);
-  flowController.setAndControlFlowRate(33.0);
-  if (mashTunThermometer.getTemperature() > 97.5) {
+
+  if (!hasReachedVolume(600)) {
+    if (isTemperatureStabilized()) {
+      flowController.setAndControlFlowRate(33.0); // Higher flow if stabilized
+    } else {
+      flowController.setAndControlFlowRate(10.0); // Lower flow if not stabilized
+    }
+  } else {
     taskManager.cancelTask(collectLateTailsTaskId);
     finalizeDistillationTaskId = taskManager.scheduleFixedRate(1000, finalizeDistillation);
   }
 }
 
-
+// Collect early tails phase
 void collectEarlyTails() {
   DistillationStateManager::getInstance().setState(EARLY_TAILS);
   heaterController.setPower(2000);
   valveController.openCoolantValve();
   valveController.openDistillateValve(EARLY_TAILS);
-  flowController.setAndControlFlowRate(33.0);
-  if (hasReachedVolume(700) && isTemperatureStabilized()) {
+
+  if (!hasReachedVolume(700)) {
+    if (isTemperatureStabilized()) {
+      flowController.setAndControlFlowRate(33.0); // Higher flow if stabilized
+    } else {
+      flowController.setAndControlFlowRate(10.0); // Lower flow if not stabilized
+    }
+  } else {
     taskManager.cancelTask(collectEarlyTailsTaskId);
     collectLateTailsTaskId = taskManager.scheduleFixedRate(1000, collectLateTails);
   }
 }
 
+// Collect hearts phase
 void collectHearts() {
   DistillationStateManager::getInstance().setState(HEARTS);
   heaterController.setPower(2000);
   valveController.openCoolantValve();
   valveController.openDistillateValve(HEARTS);
+
   if (!hasReachedVolume(5000) || !nearTopThermometer.isSuddenTemperatureIncrease(0.1)) {
     if (isTemperatureStabilized()) {
-      flowController.setAndControlFlowRate(33.0);
+      flowController.setAndControlFlowRate(33.0); // Higher flow if stabilized
     } else {
-      flowController.setAndControlFlowRate(10.0);
+      flowController.setAndControlFlowRate(10.0); // Lower flow if not stabilized
     }
   } else {
     taskManager.cancelTask(collectHeartsTaskId);
@@ -142,42 +164,59 @@ void collectHearts() {
   }
 }
 
+// Collect heads phase
 void collectHeads() {
   DistillationStateManager::getInstance().setState(HEADS);
   heaterController.setPower(2000);
   valveController.openCoolantValve();
   valveController.openDistillateValve(HEADS);
-  flowController.setAndControlFlowRate(33.0);
-  if (hasReachedVolume(900) && isTemperatureStabilized()) {
+
+  if (!hasReachedVolume(900)) {
+    if (isTemperatureStabilized()) {
+      flowController.setAndControlFlowRate(33.0); // Higher flow if stabilized
+    } else {
+      flowController.setAndControlFlowRate(10.0); // Lower flow if not stabilized
+    }
+  } else {
     taskManager.cancelTask(collectHeadsTaskId);
     collectHeartsTaskId = taskManager.scheduleFixedRate(1000, collectHearts);
   }
 }
 
+// Collect late foreshots phase
 void collectLateForeshots() {
   DistillationStateManager::getInstance().setState(LATE_FORESHOTS);
   heaterController.setPower(2000);
   valveController.openCoolantValve();
   valveController.openDistillateValve(LATE_FORESHOTS);
-  flowController.setAndControlFlowRate(33.0);
-  if (hasReachedVolume(400) && isTemperatureStabilized()) {
+
+  if (!hasReachedVolume(400)) {
+    if (isTemperatureStabilized()) {
+      flowController.setAndControlFlowRate(33.0); // Higher flow if stabilized
+    } else {
+      flowController.setAndControlFlowRate(10.0); // Lower flow if not stabilized
+    }
+  } else {
     taskManager.cancelTask(collectLateForeshotsTaskId);
     collectHeadsTaskId = taskManager.scheduleFixedRate(1000, collectHeads);
   }
 }
 
+// Collect early foreshots phase
 void collectEarlyForeshots() {
   DistillationStateManager::getInstance().setState(EARLY_FORESHOTS);
   heaterController.setPower(2000);
   valveController.openCoolantValve();
   valveController.openDistillateValve(EARLY_FORESHOTS);
   flowController.setAndControlFlowRate(10.0);
+
   if (hasReachedVolume(200) && isTemperatureStabilized()) {
     taskManager.cancelTask(collectEarlyForeshotsTaskId);
     collectLateForeshotsTaskId = taskManager.scheduleFixedRate(1000, collectLateForeshots);
   }
 }
 
+// Wait for temperature stabilization phase
 void waitForTemperatureStabilization() {
   DistillationStateManager::getInstance().setState(STABILIZING);
   heaterController.setPower(2000);
@@ -188,6 +227,7 @@ void waitForTemperatureStabilization() {
   }
 }
 
+// Heat up mash phase
 void heatUpMash() {
   float temperature = topThermometer.getTemperature();
   if (temperature < 40.0) {
@@ -198,10 +238,12 @@ void heatUpMash() {
   }
 }
 
+// Setup the process and schedule tasks
 void setup() {
   taskManager.scheduleFixedRate(1000, updateAllThermometers);
   taskManager.scheduleFixedRate(1000, updateAllScales);
   heatUpMashTaskId = taskManager.scheduleFixedRate(1000, heatUpMash);
 }
 
+// Main loop to manage tasks
 void loop() { taskManager.runLoop(); }

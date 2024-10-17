@@ -16,7 +16,6 @@ SpacesInSquareBrackets: false
 SpaceAfterCStyleCast: false
 SpacesInAngles: false
 SpaceAfterTemplateKeyword: true
-SpacesInParameterList: false
 SpaceBeforeAssignmentOperators: true
 AlignAfterOpenBracket: Align
 AlignOperands: true
