@@ -1,22 +1,21 @@
-#include <Arduino.h>
-#include <TaskManagerIO.h>
-
 #include "display_controller.h"
 #include "distillation_state_manager.h"
 #include "flow_controller.h"
 #include "heater_controller.h"
 #include "lcd.h"
-#include "scale.h"
-#include "thermometer.h"
+#include "scale_controller.h"
+#include "thermometer_controller.h"
 #include "valve_controller.h"
+#include <Arduino.h>
+#include <TaskManagerIO.h>
 
-// Creating Thermometer objects
+// Creating objects for thermometers
 Thermometer mashTunThermometer(1);
 Thermometer bottomThermometer(2);
 Thermometer nearTopThermometer(3);
 Thermometer topThermometer(4);
 
-// Creating Scale objects
+// Creating objects for scales
 Scale earlyForeshotsScale(5, 6);
 Scale lateForeshotsScale(7, 8);
 Scale headsScale(9, 10);
@@ -24,12 +23,12 @@ Scale heartsScale(11, 12);
 Scale earlyTailsScale(13, 14);
 Scale lateTailsScale(15, 16);
 
-// Creating objects for HeaterController
+// Creating objects for heater relays
 Relay heaterRelay1(13);
 Relay heaterRelay2(14);
 Relay heaterRelay3(15);
 
-// Creating objects for ValveController (8 valves)
+// Creating objects for valve relays
 Relay valveRelay1(16); // earlyForeshotsValve
 Relay valveRelay2(17); // lateForeshotsValve
 Relay valveRelay3(18); // headsValve
@@ -39,7 +38,7 @@ Relay valveRelay6(21); // lateTailsValve
 Relay valveRelay7(22); // coolantValve
 Relay valveRelay8(23); // mainValve
 
-// Creating object for DisplayController
+// Creating LCD object
 Lcd lcd(20, 4, 3);
 
 // Creating controllers
@@ -64,22 +63,10 @@ taskid_t collectLateTailsTaskId;
 taskid_t finalizeDistillationTaskId;
 
 // Update all thermometers
-void updateAllThermometers() {
-  mashTunThermometer.updateTemperature();
-  bottomThermometer.updateTemperature();
-  nearTopThermometer.updateTemperature();
-  topThermometer.updateTemperature();
-}
+void updateAllThermometers() { thermometerController.updateAllTemperatures(); }
 
 // Update all scales
-void updateAllScales() {
-  earlyForeshotsScale.updateWeight();
-  lateForeshotsScale.updateWeight();
-  headsScale.updateWeight();
-  heartsScale.updateWeight();
-  earlyTailsScale.updateWeight();
-  lateTailsScale.updateWeight();
-}
+void updateAllScales() { scaleController.updateAllWeights(); }
 
 // Check if the target volume is reached
 bool hasReachedVolume(float distillateVolume) {
@@ -240,8 +227,11 @@ void heatUpMash() {
 
 // Setup the process and schedule tasks
 void setup() {
-  taskManager.scheduleFixedRate(1000, updateAllThermometers);
-  taskManager.scheduleFixedRate(1000, updateAllScales);
+  taskManager.scheduleFixedRate(1000, [] {
+    thermometerController.updateAllTemperatures();
+    scaleController.updateAllWeights();
+  });
+
   heatUpMashTaskId = taskManager.scheduleFixedRate(1000, heatUpMash);
 }
 

@@ -6,7 +6,18 @@
 /**
  * Enum for distillation states.
  */
-enum DistillationState { OFF, HEAT_UP, STABILIZING, EARLY_FORESHOTS, LATE_FORESHOTS, HEADS, HEARTS, EARLY_TAILS, LATE_TAILS, FINALIZING };
+enum DistillationState {
+  OFF,
+  HEAT_UP,
+  STABILIZING,
+  EARLY_FORESHOTS,
+  LATE_FORESHOTS,
+  HEADS,
+  HEARTS,
+  EARLY_TAILS,
+  LATE_TAILS,
+  FINALIZING
+};
 
 class DistillationStateManager {
 private:

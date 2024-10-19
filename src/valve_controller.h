@@ -1,8 +1,8 @@
 #ifndef VALVE_CONTROLLER_H
 #define VALVE_CONTROLLER_H
 
-#include "relay.h"
 #include "distillation_state_manager.h"
+#include "relay.h"
 #include <Arduino.h>
 
 /**
@@ -10,14 +10,14 @@
  */
 class ValveController {
 private:
-  Relay coolantValve;           /**< Relay for controlling the coolant valve. */
-  Relay mainValve;              /**< Relay for controlling the main valve. */
-  Relay earlyForeshotsValve;    /**< Relay for controlling the early foreshots valve. */
-  Relay lateForeshotsValve;     /**< Relay for controlling the late foreshots valve. */
-  Relay headsValve;             /**< Relay for controlling the heads valve. */
-  Relay heartsValve;            /**< Relay for controlling the hearts valve. */
-  Relay earlyTailsValve;        /**< Relay for controlling the early tails valve. */
-  Relay lateTailsValve;         /**< Relay for controlling the late tails valve. */
+  Relay coolantValve;        /**< Relay for controlling the coolant valve. */
+  Relay mainValve;           /**< Relay for controlling the main valve. */
+  Relay earlyForeshotsValve; /**< Relay for controlling the early foreshots valve. */
+  Relay lateForeshotsValve;  /**< Relay for controlling the late foreshots valve. */
+  Relay headsValve;          /**< Relay for controlling the heads valve. */
+  Relay heartsValve;         /**< Relay for controlling the hearts valve. */
+  Relay earlyTailsValve;     /**< Relay for controlling the early tails valve. */
+  Relay lateTailsValve;      /**< Relay for controlling the late tails valve. */
 
 public:
   /**
@@ -31,10 +31,10 @@ public:
    * @param earlyTailsValve Relay for controlling the early tails valve.
    * @param lateTailsValve Relay for controlling the late tails valve.
    */
-  ValveController(Relay coolantValve, Relay mainValve, Relay earlyForeshotsValve, Relay lateForeshotsValve, 
+  ValveController(Relay coolantValve, Relay mainValve, Relay earlyForeshotsValve, Relay lateForeshotsValve,
                   Relay headsValve, Relay heartsValve, Relay earlyTailsValve, Relay lateTailsValve)
-    : coolantValve(coolantValve), mainValve(mainValve), earlyForeshotsValve(earlyForeshotsValve), 
-      lateForeshotsValve(lateForeshotsValve), headsValve(headsValve), heartsValve(heartsValve), 
+    : coolantValve(coolantValve), mainValve(mainValve), earlyForeshotsValve(earlyForeshotsValve),
+      lateForeshotsValve(lateForeshotsValve), headsValve(headsValve), heartsValve(heartsValve),
       earlyTailsValve(earlyTailsValve), lateTailsValve(lateTailsValve) {}
 
   /**

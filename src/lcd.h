@@ -9,40 +9,40 @@
 
 class Lcd {
 private:
-  hd44780_I2Cexp lcd;
-  uint8_t channel;
+  hd44780_I2Cexp lcd; // LCD object
+  uint8_t channel;    // I2C multiplexer channel
+  int lcdCols, lcdRows;
 
 public:
-  /**
-   * Constructor for the LCDController class.
-   * @param lcdCols The number of columns of the LCD display.
-   * @param lcdRows The number of rows of the LCD display.
-   * @param channel The channel number on the multiplexer.
-   */
-  Lcd(int lcdCols, int lcdRows, uint8_t channel) : channel(channel) {
+  // Constructor: stores configuration but doesn't initialize LCD
+  Lcd(int lcdCols, int lcdRows, uint8_t channel) : channel(channel), lcdCols(lcdCols), lcdRows(lcdRows) {}
+
+  // Initializes the LCD; must be called after I2C is set up
+  void init() {
     selectChannel(channel);
     lcd.begin(lcdCols, lcdRows);
   }
 
-  /**
-   * Displays text on the LCD display at the specified row.
-   * @param text The text to be displayed.
-   * @param row The row index where the text should be displayed.
-   */
-  void displayText(String text, int row) {
+  // Displays text on a specific row
+  void writeToRow(const String &text, int row) {
+    selectChannel(channel);
     lcd.setCursor(0, row);
     lcd.print(text.c_str());
   }
 
-  /**
-   * Clears the LCD display.
-   */
-  void clear() { lcd.clear(); }
+  // Clears the display
+  void clear() {
+    selectChannel(channel);
+    lcd.clear();
+  }
 
+private:
+  // Selects the correct I2C channel on the multiplexer
   void selectChannel(uint8_t channel) {
     Wire.beginTransmission(MULTIPLEXER_ADDRESS);
     Wire.write(1 << channel);
     Wire.endTransmission();
+    delay(100); // Ensure channel switching
   }
 };
 

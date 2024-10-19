@@ -1,20 +1,20 @@
 #ifndef SCALE_CONTROLLER_H
 #define SCALE_CONTROLLER_H
 
-#include "scale.h"
 #include "distillation_state_manager.h"
+#include "scale.h"
 
 /**
  * Class for managing scales.
  */
 class ScaleController {
 private:
-  Scale earlyForeshotsScale; /**< Scale for weighing the early foreshots. */
-  Scale lateForeshotsScale;  /**< Scale for weighing the late foreshots. */
-  Scale headsScale;          /**< Scale for weighing the heads. */
-  Scale heartsScale;         /**< Scale for weighing the hearts. */
-  Scale earlyTailsScale;     /**< Scale for weighing the early tails. */
-  Scale lateTailsScale;      /**< Scale for weighing the late tails. */
+  Scale &earlyForeshotsScale; /**< Scale for weighing the early foreshots. */
+  Scale &lateForeshotsScale;  /**< Scale for weighing the late foreshots. */
+  Scale &headsScale;          /**< Scale for weighing the heads. */
+  Scale &heartsScale;         /**< Scale for weighing the hearts. */
+  Scale &earlyTailsScale;     /**< Scale for weighing the early tails. */
+  Scale &lateTailsScale;      /**< Scale for weighing the late tails. */
 
 public:
   /**
@@ -26,10 +26,22 @@ public:
    * @param earlyTailsScale Scale for weighing the early tails.
    * @param lateTailsScale Scale for weighing the late tails.
    */
-  ScaleController(const Scale &earlyForeshotsScale, const Scale &lateForeshotsScale, const Scale &headsScale,
-                  const Scale &heartsScale, const Scale &earlyTailsScale, const Scale &lateTailsScale)
+  ScaleController(Scale &earlyForeshotsScale, Scale &lateForeshotsScale, Scale &headsScale, Scale &heartsScale,
+                  Scale &earlyTailsScale, Scale &lateTailsScale)
     : earlyForeshotsScale(earlyForeshotsScale), lateForeshotsScale(lateForeshotsScale), headsScale(headsScale),
       heartsScale(heartsScale), earlyTailsScale(earlyTailsScale), lateTailsScale(lateTailsScale) {}
+
+  /**
+   * Updates all the scales' weights.
+   */
+  void updateAllWeights() {
+    earlyForeshotsScale.updateWeight();
+    lateForeshotsScale.updateWeight();
+    headsScale.updateWeight();
+    heartsScale.updateWeight();
+    earlyTailsScale.updateWeight();
+    lateTailsScale.updateWeight();
+  }
 
   /**
    * Returns the weight of the distillate for the provided state.
@@ -51,8 +63,7 @@ public:
     case LATE_TAILS:
       return lateTailsScale.getWeight();
     default:
-      // Handle invalid state
-      return -1.0;
+      return -1.0; // Handle invalid state
     }
   }
 };

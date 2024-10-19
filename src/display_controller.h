@@ -34,26 +34,24 @@ public:
     : lcd(lcd), thermometerController(thermometerController), scaleController(scaleController),
       flowController(flowController) {}
 
-  void displayScreen1() {
-    // Volume displayed with 1 decimal place
+  void displayDistillationInfo() {
     lcd.clear();
-    lcd.displayText("Elapsed: " + getElapsedTimeFormatted(), 0);
-    lcd.displayText("State: " + String(DistillationStateManager::getInstance().getState()), 1);
-    lcd.displayText("Flow: " + String(flowController.getFlowRate(), 0) + "ml/min", 2);
-    lcd.displayText(
+    lcd.writeToRow("Elapsed: " + getElapsedTimeFormatted(), 0);
+    lcd.writeToRow("State: " + String(DistillationStateManager::getInstance().getState()), 1);
+    lcd.writeToRow("Flow: " + String(flowController.getFlowRate(), 0) + "ml/min", 2);
+    lcd.writeToRow(
         "Volume: " +
             String(scaleController.getWeight(DistillationStateManager::getInstance().getState()) / ALCOHOL_DENSITY, 1) +
             "ml",
         3);
   }
 
-  void displayScreen2() {
-    // Temperatures displayed with 1 decimal place
+  void displayTemperatureInfo() {
     lcd.clear();
-    lcd.displayText("Top: " + String(thermometerController.getTopTemperature(), 1), 0);
-    lcd.displayText("Middle: " + String(thermometerController.getNearTopTemperature(), 1), 1);
-    lcd.displayText("Bottom: " + String(thermometerController.getBottomTemperature(), 1), 2);
-    lcd.displayText("Mash tun: " + String(thermometerController.getMashTunTemperature(), 1), 3);
+    lcd.writeToRow("Top: " + String(thermometerController.getTopTemperature(), 1), 0);
+    lcd.writeToRow("Middle: " + String(thermometerController.getNearTopTemperature(), 1), 1);
+    lcd.writeToRow("Bottom: " + String(thermometerController.getBottomTemperature(), 1), 2);
+    lcd.writeToRow("Mash tun: " + String(thermometerController.getMashTunTemperature(), 1), 3);
   }
 };
 
