@@ -80,6 +80,6 @@ desktop.ini
 src/arduino_secrets.h
 
 # Project documentation
-memory-bank/
+# memory-bank/
 
 # End of https://www.toptal.com/developers/gitignore/api/platformio,c++,visualstudiocode

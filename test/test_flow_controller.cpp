@@ -7,6 +7,9 @@
 #define UNIT_TEST
 #endif
 
+// Include the distillation_state_manager.h file to get the DistillationState enum
+#include "../src/distillation_state_manager.h"
+
 // Conditional includes based on test vs. production environment
 #ifdef UNIT_TEST
 // Test environment - use mock classes and functions
@@ -65,6 +68,11 @@ public:
   MOCK_METHOD(void, closeMainValve, (), ());
 };
 
+// DistillationState enum is now included from distillation_state_manager.h
+
+// Define constants
+const double ALCOHOL_DENSITY = 0.868;
+
 // Mock ScaleController
 class MockScaleController {
 public:
@@ -80,23 +88,6 @@ public:
     static MockDistillationStateManager instance;
     return instance;
   }
-};
-
-// Define constants
-const double ALCOHOL_DENSITY = 0.868;
-
-// Define DistillationState enum to match src/distillation_state_manager.h
-enum DistillationState {
-  OFF,
-  HEAT_UP,
-  STABILIZING,
-  EARLY_FORESHOTS,
-  LATE_FORESHOTS,
-  HEADS,
-  HEARTS,
-  EARLY_TAILS,
-  LATE_TAILS,
-  FINALIZING
 };
 
 // Testable FlowController

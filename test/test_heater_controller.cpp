@@ -6,6 +6,9 @@
 #define UNIT_TEST
 #endif
 
+// Forward declaration of the test class to ensure proper compilation
+class HeaterControllerTest;
+
 // Conditional includes based on test vs. production environment
 #ifdef UNIT_TEST
 // Test environment - use mock classes
@@ -150,6 +153,8 @@ TEST_F(HeaterControllerTest, SetPower6000TurnsOnAllHeaters) {
   // Assert
   EXPECT_EQ(6000, heaterController->getPower());
 }
+
+#endif // UNIT_TEST
 
 int main(int argc, char **argv) {
   ::testing::InitGoogleTest(&argc, argv);
