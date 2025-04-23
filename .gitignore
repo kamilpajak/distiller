@@ -1,6 +1,3 @@
-# Created by https://www.toptal.com/developers/gitignore/api/platformio,c++,visualstudiocode
-# Edit at https://www.toptal.com/developers/gitignore?templates=platformio,c++,visualstudiocode
-
 ### C++ ###
 # Prerequisites
 *.d
@@ -36,11 +33,14 @@
 *.app
 
 ### PlatformIO ###
-.pioenvs
-.piolibdeps
+# PlatformIO specific
+.pio/
+.pioenvs/
+.piolibdeps/
 .clang_complete
 .gcc-flags.json
-.pio
+.ccls
+.ccls-cache/
 
 ### VisualStudioCode ###
 .vscode/*
@@ -61,6 +61,25 @@
 .history
 .ionide
 
-# End of https://www.toptal.com/developers/gitignore/api/platformio,c++,visualstudiocode
+# Build and debug
+build/
+debug/
 
-src\arduino_secrets.h
+# Temporary and backup files
+*.tmp
+*.bak
+*.swp
+*~
+
+# OS specific
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Project specific
+src/arduino_secrets.h
+
+# Project documentation
+memory-bank/
+
+# End of https://www.toptal.com/developers/gitignore/api/platformio,c++,visualstudiocode
