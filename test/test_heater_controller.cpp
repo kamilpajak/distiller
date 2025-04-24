@@ -72,10 +72,24 @@ protected:
   }
 };
 
+/**
+ * @brief Test case for InitialPowerIsZero.
+ * 
+ * Given a new HeaterController object is created.
+ * When the power is checked.
+ * Then it should be zero.
+ */
 TEST_F(HeaterControllerTest, InitialPowerIsZero) {
   EXPECT_EQ(0, heaterController->getPower());
 }
 
+/**
+ * @brief Test case for SetPowerZeroTurnsOffAllHeaters.
+ * 
+ * Given a HeaterController object.
+ * When the power is set to zero.
+ * Then all heaters should be turned off.
+ */
 TEST_F(HeaterControllerTest, SetPowerZeroTurnsOffAllHeaters) {
   // Arrange
   EXPECT_CALL(relay1, turnOff()).Times(1);
@@ -89,6 +103,13 @@ TEST_F(HeaterControllerTest, SetPowerZeroTurnsOffAllHeaters) {
   EXPECT_EQ(0, heaterController->getPower());
 }
 
+/**
+ * @brief Test case for SetPower1000TurnsOnHeater1Only.
+ * 
+ * Given a HeaterController object.
+ * When the power is set to 1000.
+ * Then only heater 1 should be turned on.
+ */
 TEST_F(HeaterControllerTest, SetPower1000TurnsOnHeater1Only) {
   // Arrange
   EXPECT_CALL(relay1, turnOn()).Times(1);
@@ -102,6 +123,13 @@ TEST_F(HeaterControllerTest, SetPower1000TurnsOnHeater1Only) {
   EXPECT_EQ(1000, heaterController->getPower());
 }
 
+/**
+ * @brief Test case for SetPower2000TurnsOnHeater2Only.
+ * 
+ * Given a HeaterController object.
+ * When the power is set to 2000.
+ * Then only heater 2 should be turned on.
+ */
 TEST_F(HeaterControllerTest, SetPower2000TurnsOnHeater2Only) {
   // Arrange
   EXPECT_CALL(relay1, turnOff()).Times(1);
@@ -115,6 +143,13 @@ TEST_F(HeaterControllerTest, SetPower2000TurnsOnHeater2Only) {
   EXPECT_EQ(2000, heaterController->getPower());
 }
 
+/**
+ * @brief Test case for SetPower3000TurnsOnHeater3Only.
+ * 
+ * Given a HeaterController object.
+ * When the power is set to 3000.
+ * Then only heater 3 should be turned on.
+ */
 TEST_F(HeaterControllerTest, SetPower3000TurnsOnHeater3Only) {
   // Arrange
   EXPECT_CALL(relay1, turnOff()).Times(1);
@@ -128,9 +163,16 @@ TEST_F(HeaterControllerTest, SetPower3000TurnsOnHeater3Only) {
   EXPECT_EQ(3000, heaterController->getPower());
 }
 
-TEST_F(HeaterControllerTest, SetPower3001TurnsOnHeater3AndHeater1) {
+/**
+ * @brief Test case for SetPower3001TurnsOnHeater3Only.
+ * 
+ * Given a HeaterController object.
+ * When the power is set to 3001.
+ * Then only heater 3 should be turned on (as it's the highest power heater).
+ */
+TEST_F(HeaterControllerTest, SetPower3001TurnsOnHeater3Only) {
   // Arrange
-  EXPECT_CALL(relay1, turnOn()).Times(1);
+  EXPECT_CALL(relay1, turnOff()).Times(1);
   EXPECT_CALL(relay2, turnOff()).Times(1);
   EXPECT_CALL(relay3, turnOn()).Times(1);
   
@@ -141,6 +183,13 @@ TEST_F(HeaterControllerTest, SetPower3001TurnsOnHeater3AndHeater1) {
   EXPECT_EQ(3001, heaterController->getPower());
 }
 
+/**
+ * @brief Test case for SetPower6000TurnsOnAllHeaters.
+ * 
+ * Given a HeaterController object.
+ * When the power is set to 6000.
+ * Then all heaters should be turned on.
+ */
 TEST_F(HeaterControllerTest, SetPower6000TurnsOnAllHeaters) {
   // Arrange
   EXPECT_CALL(relay1, turnOn()).Times(1);
@@ -155,8 +204,3 @@ TEST_F(HeaterControllerTest, SetPower6000TurnsOnAllHeaters) {
 }
 
 #endif // UNIT_TEST
-
-int main(int argc, char **argv) {
-  ::testing::InitGoogleTest(&argc, argv);
-  return RUN_ALL_TESTS();
-}

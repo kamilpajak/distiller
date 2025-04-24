@@ -1,15 +1,19 @@
 #ifndef LCD_H
 #define LCD_H
 
+#ifndef UNIT_TEST
 #include <Wire.h>
 #include <hd44780.h>
 #include <hd44780ioClass/hd44780_I2Cexp.h>
+#endif
 
 #define MULTIPLEXER_ADDRESS 0x70
 
 class Lcd {
 private:
+#ifndef UNIT_TEST
   hd44780_I2Cexp lcd; // LCD object
+#endif
   uint8_t channel;    // I2C multiplexer channel
   int lcdCols, lcdRows;
 
@@ -17,6 +21,7 @@ public:
   // Constructor: stores configuration but doesn't initialize LCD
   Lcd(int lcdCols, int lcdRows, uint8_t channel) : channel(channel), lcdCols(lcdCols), lcdRows(lcdRows) {}
 
+#ifndef UNIT_TEST
   // Initializes the LCD; must be called after I2C is set up
   void init() {
     selectChannel(channel);
@@ -44,6 +49,7 @@ private:
     Wire.endTransmission();
     delay(100); // Ensure channel switching
   }
+#endif
 };
 
 #endif // LCD_H

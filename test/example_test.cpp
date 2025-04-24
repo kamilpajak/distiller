@@ -35,11 +35,25 @@ protected:
   }
 };
 
+/**
+ * @brief Test case for InitialStateIsZero.
+ * 
+ * Given a new ExampleClass object is created.
+ * When the state is checked.
+ * Then it should be zero.
+ */
 TEST_F(ExampleClassTest, InitialStateIsZero) {
   // Assert
   EXPECT_EQ(0, exampleClass->getState());
 }
 
+/**
+ * @brief Test case for DoSomethingUpdatesState.
+ * 
+ * Given an ExampleClass object.
+ * When doSomething is called.
+ * Then the state should be updated based on the dependency's return value.
+ */
 TEST_F(ExampleClassTest, DoSomethingUpdatesState) {
   // Arrange
   EXPECT_CALL(*dependency1, method1())
@@ -55,7 +69,13 @@ TEST_F(ExampleClassTest, DoSomethingUpdatesState) {
   EXPECT_EQ(42, exampleClass->getState());
 }
 
-// Example of a test that verifies interaction with dependencies
+/**
+ * @brief Test case for DoSomethingCallsDependencies.
+ * 
+ * Given an ExampleClass object.
+ * When doSomething is called.
+ * Then the dependencies' methods should be called the expected number of times.
+ */
 TEST_F(ExampleClassTest, DoSomethingCallsDependencies) {
   // Arrange
   EXPECT_CALL(*dependency1, method1())
@@ -67,9 +87,4 @@ TEST_F(ExampleClassTest, DoSomethingCallsDependencies) {
   
   // Act
   exampleClass->doSomething();
-}
-
-int main(int argc, char **argv) {
-  ::testing::InitGoogleTest(&argc, argv);
-  return RUN_ALL_TESTS();
 }

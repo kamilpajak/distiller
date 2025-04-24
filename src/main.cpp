@@ -1,3 +1,4 @@
+#ifndef UNIT_TEST
 #include "display_controller.h"
 #include "distillation_state_manager.h"
 #include "flow_controller.h"
@@ -237,3 +238,4 @@ void setup() {
 
 // Main loop to manage tasks
 void loop() { taskManager.runLoop(); }
+#endif // UNIT_TEST

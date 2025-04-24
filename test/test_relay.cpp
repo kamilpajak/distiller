@@ -68,6 +68,13 @@ protected:
   }
 };
 
+/**
+ * @brief Test case for InitializesCorrectly.
+ * 
+ * Given a pin number.
+ * When a Relay object is initialized with the pin number.
+ * Then pinMode should be called with OUTPUT and digitalWrite should be called with LOW.
+ */
 TEST_F(RelayTest, InitializesCorrectly) {
   // Arrange
   const int pin = 5;
@@ -80,6 +87,13 @@ TEST_F(RelayTest, InitializesCorrectly) {
   Relay relay(pin);
 }
 
+/**
+ * @brief Test case for TurnOnSetsOutputHigh.
+ * 
+ * Given a Relay object.
+ * When turnOn is called.
+ * Then digitalWrite should be called with HIGH.
+ */
 TEST_F(RelayTest, TurnOnSetsOutputHigh) {
   // Arrange
   const int pin = 5;
@@ -97,6 +111,13 @@ TEST_F(RelayTest, TurnOnSetsOutputHigh) {
   relay.turnOn();
 }
 
+/**
+ * @brief Test case for TurnOffSetsOutputLow.
+ * 
+ * Given a Relay object that is currently on.
+ * When turnOff is called.
+ * Then digitalWrite should be called with LOW.
+ */
 TEST_F(RelayTest, TurnOffSetsOutputLow) {
   // Arrange
   const int pin = 5;
@@ -118,6 +139,13 @@ TEST_F(RelayTest, TurnOffSetsOutputLow) {
   relay.turnOff();
 }
 
+/**
+ * @brief Test case for TurnOnDoesNothingIfAlreadyOn.
+ * 
+ * Given a Relay object that is currently on.
+ * When turnOn is called again.
+ * Then no further calls to digitalWrite should occur.
+ */
 TEST_F(RelayTest, TurnOnDoesNothingIfAlreadyOn) {
   // Arrange
   const int pin = 5;
@@ -136,6 +164,13 @@ TEST_F(RelayTest, TurnOnDoesNothingIfAlreadyOn) {
   relay.turnOn();
 }
 
+/**
+ * @brief Test case for TurnOffDoesNothingIfAlreadyOff.
+ * 
+ * Given a Relay object that is currently off.
+ * When turnOff is called again.
+ * Then no further calls to digitalWrite should occur.
+ */
 TEST_F(RelayTest, TurnOffDoesNothingIfAlreadyOff) {
   // Arrange
   const int pin = 5;
@@ -148,9 +183,4 @@ TEST_F(RelayTest, TurnOffDoesNothingIfAlreadyOff) {
   
   // Act & Assert - No more calls to digitalWrite expected
   relay.turnOff();
-}
-
-int main(int argc, char **argv) {
-  ::testing::InitGoogleTest(&argc, argv);
-  return RUN_ALL_TESTS();
 }

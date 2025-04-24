@@ -12,8 +12,6 @@ RUN pip install platformio
 # Set up working directory
 WORKDIR /project
 
-# Copy project files
-COPY . .
 
 # Command to run tests
 CMD ["pio", "test", "-e", "test"]

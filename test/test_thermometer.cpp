@@ -2,98 +2,29 @@
 #include <gmock/gmock.h>
 #include <memory>
 
-// Define UNIT_TEST if not already defined
-#ifndef UNIT_TEST
-#define UNIT_TEST
-#endif
-
-// Conditional includes based on test vs. production environment
-#ifdef UNIT_TEST
-// Test environment - use mock classes
-// Mock classes for OneWire and DallasTemperature
-class MockOneWire {
-public:
-  MOCK_METHOD(void, begin, (), ());
-  MOCK_METHOD(uint8_t, reset, (), ());
-  MOCK_METHOD(void, select, (const uint8_t*), ());
-  MOCK_METHOD(void, write, (uint8_t), ());
-  MOCK_METHOD(void, write_bytes, (const uint8_t*, uint16_t), ());
-  MOCK_METHOD(uint8_t, read, (), ());
-  MOCK_METHOD(void, read_bytes, (uint8_t*, uint16_t), ());
-};
-
-class MockDallasTemperature {
-public:
-  MOCK_METHOD(void, begin, (), ());
-  MOCK_METHOD(void, requestTemperatures, (), ());
-  MOCK_METHOD(float, getTempCByIndex, (uint8_t), ());
-};
-
-// Modified Thermometer class for testing
-// This is a testable version of the Thermometer class from src/thermometer.h
-// In a production environment, we would use conditional compilation in the original class
-class TestableThermometer {
-private:
-  std::shared_ptr<MockOneWire> oneWire;
-  std::shared_ptr<MockDallasTemperature> sensors;
-  float readings[5];
-  int index;
-  float lastMedian;
-  int readingsCount;
-
-public:
-  explicit TestableThermometer(std::shared_ptr<MockOneWire> ow, std::shared_ptr<MockDallasTemperature> ds) 
-    : oneWire(ow), sensors(ds), index(0), lastMedian(0.0), readingsCount(0) {
-    for (int i = 0; i < 5; i++) {
-      readings[i] = 0.0;
-    }
-  }
-
-  void updateTemperature() {
-    sensors->requestTemperatures();
-    readings[index] = sensors->getTempCByIndex(0);
-    index = (index + 1) % 5;
-    readingsCount = std::min(readingsCount + 1, 5);
-
-    if (readingsCount == 5) {
-      lastMedian = getTemperature();
-    }
-  }
-
-  bool isSuddenTemperatureIncrease(float threshold) {
-    if (readingsCount < 5) {
-      return false;
-    }
-    float currentMedian = getTemperature();
-    return currentMedian - lastMedian > threshold;
-  }
-
-  float getTemperature() {
-    float sortedReadings[5];
-    std::copy(readings, readings + 5, sortedReadings);
-    std::sort(sortedReadings, sortedReadings + 5);
-    return sortedReadings[2]; // return the median
-  }
-
-  float getLastTemperature() {
-    int lastIndex = (index - 1 + 5) % 5;
-    return readings[lastIndex];
-  }
-};
+// Include the Thermometer class (now with conditional compilation)
+#include "../src/thermometer.h"
 
 class ThermometerTest : public ::testing::Test {
 protected:
   std::shared_ptr<MockOneWire> oneWire;
   std::shared_ptr<MockDallasTemperature> sensors;
-  std::unique_ptr<TestableThermometer> thermometer;
+  std::unique_ptr<Thermometer> thermometer;
 
   void SetUp() override {
     oneWire = std::make_shared<MockOneWire>();
     sensors = std::make_shared<MockDallasTemperature>();
-    thermometer = std::make_unique<TestableThermometer>(oneWire, sensors);
+    thermometer = std::make_unique<Thermometer>(oneWire, sensors);
   }
 };
 
+/**
+ * @brief Test case for GetTemperatureReturnsMedian.
+ * 
+ * Given the thermometer has received 5 temperature readings.
+ * When getTemperature is called.
+ * Then it should return the median of the readings.
+ */
 TEST_F(ThermometerTest, GetTemperatureReturnsMedian) {
   // Arrange
   EXPECT_CALL(*sensors, requestTemperatures())
@@ -115,6 +46,15 @@ TEST_F(ThermometerTest, GetTemperatureReturnsMedian) {
   EXPECT_FLOAT_EQ(21.0, thermometer->getTemperature());
 }
 
+/**
+ * @brief Test case for DetectsSuddenTemperatureIncrease.
+ * 
+ * Given the thermometer has received 5 stable readings followed by 5 readings with a sudden increase.
+ * When isSuddenTemperatureIncrease is called after the initial stable readings.
+ * Then it should return false.
+ * When isSuddenTemperatureIncrease is called after the sudden increase readings.
+ * Then it should return true.
+ */
 TEST_F(ThermometerTest, DetectsSuddenTemperatureIncrease) {
   // Arrange
   EXPECT_CALL(*sensors, requestTemperatures())
@@ -139,10 +79,13 @@ TEST_F(ThermometerTest, DetectsSuddenTemperatureIncrease) {
   for (int i = 0; i < 5; i++) {
     thermometer->updateTemperature();
   }
-  
-  // No sudden increase yet
+
+  // Explicitly set lastMedian after filling the buffer
+  thermometer->setLastMedian(thermometer->getTemperature());
+
+  // No sudden increase yet (after filling the buffer)
   EXPECT_FALSE(thermometer->isSuddenTemperatureIncrease(3.0));
-  
+
   // Add readings with the sudden increase
   for (int i = 0; i < 5; i++) {
     thermometer->updateTemperature();
@@ -152,6 +95,13 @@ TEST_F(ThermometerTest, DetectsSuddenTemperatureIncrease) {
   EXPECT_TRUE(thermometer->isSuddenTemperatureIncrease(3.0));
 }
 
+/**
+ * @brief Test case for GetLastTemperatureReturnsLastReading.
+ * 
+ * Given the thermometer has received several temperature readings.
+ * When getLastTemperature is called.
+ * Then it should return the value of the most recent reading.
+ */
 TEST_F(ThermometerTest, GetLastTemperatureReturnsLastReading) {
   // Arrange
   EXPECT_CALL(*sensors, requestTemperatures())
@@ -169,9 +119,4 @@ TEST_F(ThermometerTest, GetLastTemperatureReturnsLastReading) {
 
   // Assert
   EXPECT_FLOAT_EQ(22.0, thermometer->getLastTemperature());
-}
-
-int main(int argc, char **argv) {
-  ::testing::InitGoogleTest(&argc, argv);
-  return RUN_ALL_TESTS();
 }

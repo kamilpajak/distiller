@@ -1,7 +1,9 @@
 #ifndef SCALE_H
 #define SCALE_H
 
+#ifndef UNIT_TEST
 #include <HX711.h>
+#endif
 #include <algorithm>
 
 /**

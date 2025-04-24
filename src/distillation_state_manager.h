@@ -1,7 +1,13 @@
 #ifndef DISTILLATION_STATE_MANAGER_H
 #define DISTILLATION_STATE_MANAGER_H
 
+#ifndef UNIT_TEST
 #include <Arduino.h>
+#else
+// Provide a mock or placeholder for millis() in the test environment
+// The actual mock implementation will be in the test files
+#include "mock_arduino.h"
+#endif
 
 /**
  * Enum for distillation states.

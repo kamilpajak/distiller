@@ -1,7 +1,9 @@
 #ifndef FLOW_CONTROLLER_H
 #define FLOW_CONTROLLER_H
 
+#ifndef UNIT_TEST
 #include "PID_v1.h"
+#endif
 #include "constants.h"
 #include "scale_controller.h"
 #include "valve_controller.h"

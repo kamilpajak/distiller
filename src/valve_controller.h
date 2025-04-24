@@ -3,7 +3,9 @@
 
 #include "distillation_state_manager.h"
 #include "relay.h"
+#ifndef UNIT_TEST
 #include <Arduino.h>
+#endif
 
 /**
  * Class for managing valves.
