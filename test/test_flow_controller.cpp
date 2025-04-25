@@ -260,10 +260,11 @@ TEST_F(FlowControllerTest, ClosesMainValveWhenAheadOfTarget) {
   EXPECT_CALL(stateManager, getState())
     .WillRepeatedly(::testing::Return(HEARTS));
   
-  // Expect calls to getWeight
+  // Expect calls to getWeight - now expecting 3 calls
   EXPECT_CALL(*scaleController, getWeight(HEARTS))
     .WillOnce(::testing::Return(0.0)) // First call in initial setAndControlFlowRate
-    .WillOnce(::testing::Return(20.0 * ALCOHOL_DENSITY)); // Second call after advancing time
+    .WillOnce(::testing::Return(20.0 * ALCOHOL_DENSITY)) // Second call after advancing time
+    .WillOnce(::testing::Return(20.0 * ALCOHOL_DENSITY)); // Third call in the second setAndControlFlowRate
   
   // Set initial flow rate
   flowController->setAndControlFlowRate(10.0);
@@ -294,10 +295,11 @@ TEST_F(FlowControllerTest, MaintainsFlowRateWhenOnTarget) {
   EXPECT_CALL(stateManager, getState())
     .WillRepeatedly(::testing::Return(HEARTS));
   
-  // Expect calls to getWeight
+  // Expect calls to getWeight - now expecting 3 calls
   EXPECT_CALL(*scaleController, getWeight(HEARTS))
     .WillOnce(::testing::Return(0.0)) // First call in initial setAndControlFlowRate
-    .WillOnce(::testing::Return(10.0 * ALCOHOL_DENSITY)); // Second call after advancing time
+    .WillOnce(::testing::Return(10.0 * ALCOHOL_DENSITY)) // Second call after advancing time
+    .WillOnce(::testing::Return(10.0 * ALCOHOL_DENSITY)); // Third call in the second setAndControlFlowRate
   
   // Set initial flow rate
   flowController->setAndControlFlowRate(10.0);
