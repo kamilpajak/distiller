@@ -1,7 +1,10 @@
 #ifndef THERMOMETER_H
 #define THERMOMETER_H
 
+#include "constants.h"
+
 #include <algorithm>
+#include <array>
 #include <memory> // Required for std::shared_ptr
 
 #ifdef UNIT_TEST
@@ -12,11 +15,11 @@ class MockOneWire {
 public:
   MOCK_METHOD(void, begin, (), ());
   MOCK_METHOD(uint8_t, reset, (), ());
-  MOCK_METHOD(void, select, (const uint8_t*), ());
+  MOCK_METHOD(void, select, (const uint8_t *), ());
   MOCK_METHOD(void, write, (uint8_t), ());
-  MOCK_METHOD(void, write_bytes, (const uint8_t*, uint16_t), ());
+  MOCK_METHOD(void, write_bytes, (const uint8_t *, uint16_t), ());
   MOCK_METHOD(uint8_t, read, (), ());
-  MOCK_METHOD(void, read_bytes, (uint8_t*, uint16_t), ());
+  MOCK_METHOD(void, read_bytes, (uint8_t *, uint16_t), ());
 };
 
 class MockDallasTemperature {
@@ -27,8 +30,9 @@ public:
 };
 
 #else
-#include <DallasTemperature.h>
-#include <OneWire.h>
+// Use quotes for regular builds, which will look in the project include paths first
+#include "DallasTemperature/DallasTemperature.h"
+#include "OneWire/OneWire.h"
 #endif
 
 /**
@@ -43,34 +47,32 @@ private:
   OneWire oneWire;           /**< OneWire object for communication. */
   DallasTemperature sensors; /**< DallasTemperature object for temperature sensing. */
 #endif
-  float readings[5];         /**< Array to store temperature readings. */
-  int index;                 /**< Index for the current reading. */
-  float lastMedian;          /**< Last calculated median temperature. */
-  int readingsCount;         /**< Number of valid temperature readings stored. */
+  std::array<float, READINGS_ARRAY_SIZE> readings{}; /**< Array to store temperature readings. */
+  int index{0};                                      /**< Index for the current reading. */
+  float lastMedian{0.0F};                            /**< Last calculated median temperature. */
+  int readingsCount{0};                              /**< Number of valid temperature readings stored. */
 
 public:
 #ifdef UNIT_TEST
   // Constructor for the test environment
-  explicit Thermometer(std::shared_ptr<MockOneWire> ow, std::shared_ptr<MockDallasTemperature> ds) 
-    : oneWire(ow), sensors(ds), index(0), lastMedian(0.0), readingsCount(0) {
-    for (int i = 0; i < 5; i++) {
-      readings[i] = 0.0;
+  explicit Thermometer(std::shared_ptr<MockOneWire> ow, std::shared_ptr<MockDallasTemperature> ds)
+    : oneWire(std::move(ow)), sensors(std::move(ds)) {
+    for (float &reading : readings) {
+      reading = 0.0F;
     }
   }
 
   // Method to set lastMedian for testing purposes
-  void setLastMedian(float median) {
-    lastMedian = median;
-  }
+  void setLastMedian(float median) { lastMedian = median; }
 #else
   /**
    * Constructor for the Thermometer class.
    * @param pin The pin number for the thermometer sensor.
    */
-  explicit Thermometer(int pin) : oneWire(pin), sensors(&oneWire), index(0), lastMedian(0.0), readingsCount(0) {
+  explicit Thermometer(int pin) : oneWire(pin), sensors(&oneWire) {
     sensors.begin();
-    for (int i = 0; i < 5; i++) {
-      readings[i] = 0.0;
+    for (float &reading : readings) {
+      reading = 0.0F;
     }
   }
 #endif
@@ -82,20 +84,21 @@ public:
 #ifdef UNIT_TEST
     sensors->requestTemperatures();
     // Update the last median before adding the new reading
-    if (readingsCount == 5) {
+    if (readingsCount == READINGS_ARRAY_SIZE) {
       lastMedian = getTemperature();
     }
     readings[index] = sensors->getTempCByIndex(0);
 #else
     sensors.requestTemperatures();
     // Update the last median before adding the new reading
-    if (readingsCount == 5) {
+    if (readingsCount == READINGS_ARRAY_SIZE) {
       lastMedian = getTemperature();
     }
     readings[index] = sensors.getTempCByIndex(0);
 #endif
-    index = (index + 1) % 5;
-    readingsCount = std::min(readingsCount + 1, 5); // Don't let readingsCount exceed 5
+    index = (index + 1) % READINGS_ARRAY_SIZE;
+    readingsCount =
+        std::min(readingsCount + 1, READINGS_ARRAY_SIZE); // Don't let readingsCount exceed READINGS_ARRAY_SIZE
   }
 
   /**
@@ -103,33 +106,32 @@ public:
    * @param threshold The temperature increase threshold to check against.
    * @return True if a sudden temperature increase beyond the threshold is detected, false otherwise.
    */
-  bool isSuddenTemperatureIncrease(float threshold) {
-    if (readingsCount < 5) {
+  [[nodiscard]] bool isSuddenTemperatureIncrease(float threshold) const {
+    if (readingsCount < READINGS_ARRAY_SIZE) {
       return false; // Not enough readings to calculate the median
     }
     float currentMedian = getTemperature();
     float difference = currentMedian - lastMedian;
-    float tolerance = 0.001; // Small tolerance for floating-point comparison
-    return difference > threshold + tolerance;
+    return difference > threshold + TEMPERATURE_COMPARISON_TOLERANCE;
   }
 
   /**
    * Returns the current temperature.
    * @return The current temperature in degrees Celsius.
    */
-  float getTemperature() {
-    float sortedReadings[5];
-    std::copy(readings, readings + 5, sortedReadings);
-    std::sort(sortedReadings, sortedReadings + 5);
-    return sortedReadings[2]; // return the median
+  [[nodiscard]] float getTemperature() const {
+    std::array<float, READINGS_ARRAY_SIZE> sortedReadings{};
+    std::copy(readings.begin(), readings.end(), sortedReadings.begin());
+    std::sort(sortedReadings.begin(), sortedReadings.end());
+    return sortedReadings[READINGS_ARRAY_MIDDLE_INDEX]; // return the median
   }
 
   /**
    * Returns the last temperature reading.
    * @return The last temperature reading in degrees Celsius.
    */
-  float getLastTemperature() {
-    int lastIndex = (index - 1 + 5) % 5; // calculate the index of the last reading
+  [[nodiscard]] float getLastTemperature() const {
+    int lastIndex = (index - 1 + READINGS_ARRAY_SIZE) % READINGS_ARRAY_SIZE; // calculate the index of the last reading
     return readings[lastIndex];
   }
 };

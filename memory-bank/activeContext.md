@@ -4,7 +4,7 @@
 
 The Distiller project is an automated distillation control system implemented on an Arduino MKR WiFi 1010 board. The system is designed to automate and optimize the distillation process, ensuring consistent quality and yield of the distilled product.
 
-The current focus is on understanding the existing codebase and architecture to establish a solid foundation for future development and improvements.
+The current focus is on improving code quality and maintainability by addressing static analysis warnings and ensuring a robust development environment, including the integration of a Docker-based development environment (`distiller-tools`).
 
 ## Recent Changes
 
@@ -14,27 +14,34 @@ The project is in its initial state with the following components implemented:
 - Controller classes for different subsystems (Heater, Valve, Thermometer, Scale, Flow, Display)
 - Distillation state management
 - Main distillation process logic with different phases
+- Addressed several clang-tidy warnings (redefinition errors, static member access, redundant initializers, operator precedence)
+- Configured compilation database generation for improved static analysis
 
 ## Next Steps
 
 Potential next steps for the project include:
 
-1. **Code Review and Optimization**:
+1. **Address Remaining Clang-Tidy Warnings**:
+   - Investigate and fix warnings related to protected member variables in test fixtures.
+   - Address warnings about array subscript when the index is not an integer constant expression.
+   - Refactor code to address warnings about non-const global variables.
+
+2. **Code Review and Optimization**:
    - Review the existing code for potential bugs or inefficiencies
    - Optimize memory usage and performance
    - Improve error handling and robustness
 
-2. **Testing and Validation**:
-   - ✅ Develop comprehensive tests for each component (implemented with Google Test and Google Mock)
+3. **Testing and Validation**:
+   - Develop comprehensive tests for each component (implemented with Google Test and Google Mock)
    - Validate the system's behavior under different conditions
    - Ensure proper error handling and recovery
 
-3. **Feature Enhancements**:
+4. **Feature Enhancements**:
    - Add remote monitoring capabilities using the WiFi module
    - Implement data logging for analysis and optimization
    - Add user interface for configuration and monitoring
 
-4. **Documentation**:
+5. **Documentation**:
    - Create detailed documentation for the system
    - Document the distillation process and parameters
    - Create user manuals and setup guides
@@ -52,6 +59,8 @@ Potential next steps for the project include:
 4. **C++23 Standard**: The project now uses the C++23 standard for both production and test code, allowing the use of modern C++ features.
 
 5. **Testing Framework**: The project uses Google Test and Google Mock for unit testing, providing a robust framework for testing the system's components in isolation.
+
+6. **Compilation Database**: Configured PlatformIO to generate a `compile_commands.json` file to provide static analysis tools like clang-tidy with accurate compilation information.
 
 ### Implementation Considerations
 
@@ -92,6 +101,10 @@ Potential next steps for the project include:
 2. **Flow Control Challenges**: Controlling the flow rate accurately is challenging due to variations in pressure and temperature. The PID controller helps maintain a consistent flow rate, but tuning is crucial.
 
 3. **State Transitions**: The transitions between different distillation states are critical points in the process. Clear conditions for state transitions help ensure proper operation.
+
+4. **Volume Measurement**: Accurate measurement of the volume of each fraction is crucial for quality control. The system uses weight measurements and density conversion for this purpose.
+
+5. **Static Analysis Configuration**: Correctly configuring static analysis tools like clang-tidy with a compilation database is essential for accurate and relevant code analysis. Incorrect configuration can lead to misleading warnings and errors.
 
 ### Process Insights
 

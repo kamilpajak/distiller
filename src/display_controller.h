@@ -7,6 +7,15 @@
 #include "scale_controller.h"
 #include "thermometer_controller.h"
 
+#include <array>
+#include <iomanip>
+#include <sstream>
+
+// Time constants
+constexpr unsigned long SECONDS_PER_HOUR = 3600;
+constexpr unsigned long SECONDS_PER_MINUTE = 60;
+constexpr int TIME_BUFFER_SIZE = 9; // HH:MM:SS + null terminator
+
 class DisplayController {
 private:
   Lcd &lcd;
@@ -17,15 +26,17 @@ private:
   /**
    * Returns the elapsed time since the start of distillation in the format HH:MM:SS.
    */
-  String getElapsedTimeFormatted() {
+  static String getElapsedTimeFormatted() {
     unsigned long elapsedTime = DistillationStateManager::getInstance().getElapsedTime();
-    unsigned long hours = elapsedTime / 3600;
-    unsigned long minutes = (elapsedTime % 3600) / 60;
-    unsigned long seconds = elapsedTime % 60;
+    unsigned long hours = elapsedTime / SECONDS_PER_HOUR;
+    unsigned long minutes = (elapsedTime % SECONDS_PER_HOUR) / SECONDS_PER_MINUTE;
+    unsigned long seconds = elapsedTime % SECONDS_PER_MINUTE;
 
-    char buffer[9];
-    sprintf(buffer, "%02lu:%02lu:%02lu", hours, minutes, seconds);
-    return String(buffer);
+    std::stringstream ss;
+    ss << std::setfill('0') << std::setw(2) << hours << ":" << std::setfill('0') << std::setw(2) << minutes << ":"
+       << std::setfill('0') << std::setw(2) << seconds;
+
+    return {ss.str().c_str()};
   }
 
 public:

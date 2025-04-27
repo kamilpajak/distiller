@@ -29,6 +29,10 @@ The Distiller project has implemented the following components and functionality
 - **Regular Sensor Updates**: Temperature and weight sensors are updated at regular intervals
 - **State-Specific Tasks**: Each distillation state has its own task that runs at regular intervals
 
+### Code Quality and Development Environment
+- **Addressed Clang-Tidy Warnings**: Resolved several clang-tidy warnings, including redefinition errors, static member access, redundant initializers, and operator precedence.
+- **Compilation Database Setup**: Successfully configured the generation and usage of the `compile_commands.json` file for improved static analysis.
+
 ## What's Left to Build
 
 ### Testing and Validation
@@ -67,19 +71,27 @@ Sensor readings are filtered using median filtering to reduce noise and improve 
 
 The flow rate is controlled using a PID controller, which helps maintain a consistent flow rate despite variations in pressure and temperature. This is crucial for the quality of the distilled product.
 
+Significant progress has been made in improving code quality by addressing several clang-tidy warnings and setting up a robust development environment with a working compilation database for static analysis.
+
 ### Recent Improvements
 
-1. **C++23 Standard**: The project now uses the C++23 standard for both production and test code, allowing the use of modern C++ features.
+1. Docker Integration: Integrated a Dockerfile and helper scripts to provide a consistent development environment (`distiller-tools`) for running tests, code formatting, and code tidying.
 
-2. **Testing Framework**: The project now includes Google Test and Google Mock for unit testing, providing a robust framework for testing the system's components in isolation.
+2. **C++23 Standard**: The project now uses the C++23 standard for both production and test code, allowing the use of modern C++ features.
 
-3. **Unit Tests**: Several unit tests have been implemented for key components:
+3. **Testing Framework**: The project now includes Google Test and Google Mock for unit testing, providing a robust framework for testing the system's components in isolation.
+
+4. **Unit Tests**: Several unit tests have been implemented for key components:
    - **Thermometer**: Tests for temperature reading, median filtering, and sudden temperature increase detection
    - **Relay**: Tests for relay control and state management
    - **HeaterController**: Tests for power level control and heater activation logic
    - **FlowController**: Tests for flow rate control and valve management
 
-4. **Test Runners**: Added batch and shell scripts to easily run all tests.
+5. **Test Runners**: Added batch and shell scripts to easily run all tests.
+
+6. **Clang-Tidy Warnings Addressed**: Successfully resolved several clang-tidy warnings, improving code quality and reducing potential issues.
+
+7. **Compilation Database Configured**: Successfully set up the generation and usage of the `compile_commands.json` file, enabling accurate static analysis with clang-tidy.
 
 ## Known Issues
 
@@ -90,6 +102,7 @@ No specific issues have been identified yet, as the project is still in its init
 3. **Memory Usage**: The Arduino MKR WiFi 1010 has limited RAM (32 KB), which may be a constraint for future enhancements.
 4. **Power Requirements**: The system requires external power for the heaters and relays, which may be a limitation in some environments.
 5. **Error Handling**: The current implementation may not handle all possible error conditions gracefully.
+6. **Remaining Clang-Tidy Warnings**: Some less critical clang-tidy warnings still need to be addressed.
 
 ## Evolution of Project Decisions
 
@@ -108,5 +121,7 @@ The project has made several key decisions that have shaped its development:
 6. **C++23 Standard**: The decision to use the C++23 standard allows the use of modern C++ features, improving code quality and maintainability.
 
 7. **Test-Driven Development**: The decision to implement unit tests using Google Test and Google Mock enables test-driven development, improving code quality and reliability.
+
+8. **Static Analysis Integration**: The decision to integrate static analysis with clang-tidy and configure a compilation database demonstrates a commitment to code quality and helps identify potential issues early in the development process.
 
 These decisions have contributed to a solid foundation for the project, setting it up for future enhancements and optimizations.

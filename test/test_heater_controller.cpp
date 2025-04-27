@@ -1,5 +1,11 @@
-#include <gtest/gtest.h>
+#include "../src/constants.h"
+
+// Define a test-specific constant for the non-standard power level
+constexpr int TEST_HEATER_POWER_LEVEL_3001 = 3001;
+
+#include <array>
 #include <gmock/gmock.h>
+#include <gtest/gtest.h>
 
 // Define UNIT_TEST if not already defined
 #ifndef UNIT_TEST
@@ -26,21 +32,21 @@ public:
 // In a production environment, we would use conditional compilation in the original class
 class TestableHeaterController {
 private:
-  MockRelay *heaters[3];
-  int power;
+  std::array<MockRelay *, 3> heaters;
+  int power{0};
 
 public:
-  TestableHeaterController(MockRelay &relay1, MockRelay &relay2, MockRelay &relay3) 
-    : heaters{&relay1, &relay2, &relay3}, power(0) {}
+  TestableHeaterController(MockRelay &relay1, MockRelay &relay2, MockRelay &relay3)
+    : heaters{&relay1, &relay2, &relay3} {}
 
   void setPower(int power) {
     this->power = power;
     int remainingPower = power;
 
     // Determine the state of each heater
-    bool heaterStates[3] = {false, false, false};
+    std::array<bool, 3> heaterStates = {false, false, false};
     for (int i = 2; i >= 0; i--) {
-      int heaterPower = (i + 1) * 1000;
+      int heaterPower = (i + 1) * HEATER_POWER_LEVEL_1;
       if (remainingPower >= heaterPower) {
         heaterStates[i] = true;
         remainingPower -= heaterPower;
@@ -48,7 +54,7 @@ public:
     }
 
     // Update the state of each heater
-    for (int i = 0; i < 3; i++) {
+    for (size_t i = 0; i < heaters.size(); i++) {
       if (heaterStates[i]) {
         heaters[i]->turnOn();
       } else {
@@ -57,7 +63,7 @@ public:
     }
   }
 
-  int getPower() { return power; }
+  [[nodiscard]] int getPower() const { return power; }
 };
 
 class HeaterControllerTest : public ::testing::Test {
@@ -67,25 +73,21 @@ protected:
   MockRelay relay3;
   std::unique_ptr<TestableHeaterController> heaterController;
 
-  void SetUp() override {
-    heaterController = std::make_unique<TestableHeaterController>(relay1, relay2, relay3);
-  }
+  void SetUp() override { heaterController = std::make_unique<TestableHeaterController>(relay1, relay2, relay3); }
 };
 
 /**
  * @brief Test case for InitialPowerIsZero.
- * 
+ *
  * Given a new HeaterController object is created.
  * When the power is checked.
  * Then it should be zero.
  */
-TEST_F(HeaterControllerTest, InitialPowerIsZero) {
-  EXPECT_EQ(0, heaterController->getPower());
-}
+TEST_F(HeaterControllerTest, InitialPowerIsZero) { EXPECT_EQ(0, heaterController->getPower()); }
 
 /**
  * @brief Test case for SetPowerZeroTurnsOffAllHeaters.
- * 
+ *
  * Given a HeaterController object.
  * When the power is set to zero.
  * Then all heaters should be turned off.
@@ -95,17 +97,17 @@ TEST_F(HeaterControllerTest, SetPowerZeroTurnsOffAllHeaters) {
   EXPECT_CALL(relay1, turnOff()).Times(1);
   EXPECT_CALL(relay2, turnOff()).Times(1);
   EXPECT_CALL(relay3, turnOff()).Times(1);
-  
+
   // Act
   heaterController->setPower(0);
-  
+
   // Assert
   EXPECT_EQ(0, heaterController->getPower());
 }
 
 /**
  * @brief Test case for SetPower1000TurnsOnHeater1Only.
- * 
+ *
  * Given a HeaterController object.
  * When the power is set to 1000.
  * Then only heater 1 should be turned on.
@@ -115,17 +117,17 @@ TEST_F(HeaterControllerTest, SetPower1000TurnsOnHeater1Only) {
   EXPECT_CALL(relay1, turnOn()).Times(1);
   EXPECT_CALL(relay2, turnOff()).Times(1);
   EXPECT_CALL(relay3, turnOff()).Times(1);
-  
+
   // Act
-  heaterController->setPower(1000);
-  
+  heaterController->setPower(HEATER_POWER_LEVEL_1);
+
   // Assert
   EXPECT_EQ(1000, heaterController->getPower());
 }
 
 /**
  * @brief Test case for SetPower2000TurnsOnHeater2Only.
- * 
+ *
  * Given a HeaterController object.
  * When the power is set to 2000.
  * Then only heater 2 should be turned on.
@@ -135,17 +137,17 @@ TEST_F(HeaterControllerTest, SetPower2000TurnsOnHeater2Only) {
   EXPECT_CALL(relay1, turnOff()).Times(1);
   EXPECT_CALL(relay2, turnOn()).Times(1);
   EXPECT_CALL(relay3, turnOff()).Times(1);
-  
+
   // Act
-  heaterController->setPower(2000);
-  
+  heaterController->setPower(HEATER_POWER_LEVEL_2);
+
   // Assert
   EXPECT_EQ(2000, heaterController->getPower());
 }
 
 /**
  * @brief Test case for SetPower3000TurnsOnHeater3Only.
- * 
+ *
  * Given a HeaterController object.
  * When the power is set to 3000.
  * Then only heater 3 should be turned on.
@@ -155,17 +157,17 @@ TEST_F(HeaterControllerTest, SetPower3000TurnsOnHeater3Only) {
   EXPECT_CALL(relay1, turnOff()).Times(1);
   EXPECT_CALL(relay2, turnOff()).Times(1);
   EXPECT_CALL(relay3, turnOn()).Times(1);
-  
+
   // Act
-  heaterController->setPower(3000);
-  
+  heaterController->setPower(HEATER_POWER_LEVEL_3);
+
   // Assert
   EXPECT_EQ(3000, heaterController->getPower());
 }
 
 /**
  * @brief Test case for SetPower3001TurnsOnHeater3Only.
- * 
+ *
  * Given a HeaterController object.
  * When the power is set to 3001.
  * Then only heater 3 should be turned on (as it's the highest power heater).
@@ -175,17 +177,17 @@ TEST_F(HeaterControllerTest, SetPower3001TurnsOnHeater3Only) {
   EXPECT_CALL(relay1, turnOff()).Times(1);
   EXPECT_CALL(relay2, turnOff()).Times(1);
   EXPECT_CALL(relay3, turnOn()).Times(1);
-  
+
   // Act
-  heaterController->setPower(3001);
-  
+  heaterController->setPower(TEST_HEATER_POWER_LEVEL_3001);
+
   // Assert
   EXPECT_EQ(3001, heaterController->getPower());
 }
 
 /**
  * @brief Test case for SetPower6000TurnsOnAllHeaters.
- * 
+ *
  * Given a HeaterController object.
  * When the power is set to 6000.
  * Then all heaters should be turned on.
@@ -195,10 +197,10 @@ TEST_F(HeaterControllerTest, SetPower6000TurnsOnAllHeaters) {
   EXPECT_CALL(relay1, turnOn()).Times(1);
   EXPECT_CALL(relay2, turnOn()).Times(1);
   EXPECT_CALL(relay3, turnOn()).Times(1);
-  
+
   // Act
-  heaterController->setPower(6000);
-  
+  heaterController->setPower(HEATER_POWER_LEVEL_MAX);
+
   // Assert
   EXPECT_EQ(6000, heaterController->getPower());
 }

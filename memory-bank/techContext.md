@@ -56,14 +56,28 @@ platform = native
 build_flags = 
 	-std=c++23
 	-DUNIT_TEST
+	-I test
+	-I src
+	-I include
+	-I .pio/libdeps/test/DallasTemperature/src
+	-I .pio/libdeps/test/OneWire
 build_unflags = -std=gnu++11
 lib_deps =
 	google/googletest@^1.12.1
+	bogde/HX711@^0.7.5
+	milesburton/DallasTemperature@^3.11.0
+	br3ttb/PID@^1.2.1
+	duinowitchery/hd44780@^1.3.2
+	tcmenu/TaskManagerIO@^1.4.3
+	paulstoffregen/OneWire@^2.3.7
 test_framework = googletest
 test_build_src = true
+build_src_filter = +<src/*.cpp> +<src/*.h> -<src/main.cpp>
 ```
+A Python script (`scripts/generate_compile_commands.py`) is used as an extra script in the PlatformIO build process to generate the `compile_commands.json` file, which is used by static analysis tools.
 
 ### Project Structure
+- **Docker**: A Dockerfile and associated scripts are included to provide a consistent development environment (`distiller-tools`).
 - **src/**: Contains the main source code
   - **main.cpp**: Main program entry point and distillation process logic
   - **constants.h**: Global constants
@@ -79,12 +93,14 @@ test_build_src = true
   - **README.md**: Documentation for the testing framework
   - **run_tests.bat**: Windows batch script to run all tests
   - **run_tests.sh**: Unix shell script to run all tests
+- **compile_commands.json**: Compilation database used by static analysis tools.
 
 ### Development Workflow
 1. Code is developed and compiled using PlatformIO
 2. Unit tests are written and run using Google Test and Google Mock
 3. The compiled firmware is uploaded to the Arduino MKR WiFi 1010
 4. Serial monitor (9600 baud) can be used for debugging
+5. Static analysis is performed using clang-tidy with the generated `compile_commands.json`
 
 ## Technical Constraints
 
@@ -141,6 +157,7 @@ test_build_src = true
 - Used for building and uploading firmware
 - Manages library dependencies
 - Provides a unified development environment
+- Generates the `compile_commands.json` for static analysis tools
 
 ### Arduino Framework
 - Provides hardware abstraction
@@ -162,3 +179,8 @@ test_build_src = true
 - PID control for flow rate
 - Simple on/off control for heaters
 - Direct control for valves
+
+### Static Analysis (Clang-Tidy)
+- Used to identify code quality issues and potential bugs
+- Relies on the `compile_commands.json` for accurate analysis
+- Configured with a `.clang-tidy` file to specify checks and options

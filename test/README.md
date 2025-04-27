@@ -30,10 +30,16 @@ test_build_src = true
 
 ## Running Tests
 
-To run the tests, use the following command:
+To run the tests, you can use the following command with PlatformIO directly:
 
 ```bash
 pio test -e test
+```
+
+Alternatively, and recommended for a consistent environment, you can use the provided Docker image:
+
+```bash
+docker run -v $(pwd):/project distiller-tools test
 ```
 
 This will compile and run all tests in the `test` directory on your development machine, not on the Arduino hardware.

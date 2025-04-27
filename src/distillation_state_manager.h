@@ -1,8 +1,10 @@
 #ifndef DISTILLATION_STATE_MANAGER_H
 #define DISTILLATION_STATE_MANAGER_H
 
+#include <cstdint> // For std::uint8_t
+
 #ifndef UNIT_TEST
-#include <Arduino.h>
+#include "Arduino.h"
 #else
 // Provide a mock or placeholder for millis() in the test environment
 // The actual mock implementation will be in the test files
@@ -12,7 +14,7 @@
 /**
  * Enum for distillation states.
  */
-enum DistillationState {
+enum DistillationState : std::uint8_t {
   OFF,
   HEAT_UP,
   STABILIZING,
@@ -27,11 +29,11 @@ enum DistillationState {
 
 class DistillationStateManager {
 private:
-  DistillationState currentState;
-  unsigned long startTime;
+  DistillationState currentState{OFF};
+  unsigned long startTime{millis()};
 
   // Private constructor to prevent instancing.
-  DistillationStateManager() : currentState(OFF), startTime(millis()) {}
+  DistillationStateManager() = default;
 
 public:
   // Deleted copy constructor and assignment operator to prevent copying.
@@ -51,9 +53,9 @@ public:
     }
   }
 
-  DistillationState getState() const { return currentState; }
+  [[nodiscard]] DistillationState getState() const { return currentState; }
 
-  unsigned long getElapsedTime() const { return millis() - startTime; }
+  [[nodiscard]] unsigned long getElapsedTime() const { return millis() - startTime; }
 };
 
 #endif // DISTILLATION_STATE_MANAGER_H

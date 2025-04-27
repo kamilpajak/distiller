@@ -13,9 +13,10 @@ class MockDependency1;
 class MockDependency2;
 #else
 // Production environment includes
-#include <Arduino.h>
 #include "real_dependency1.h"
 #include "real_dependency2.h"
+
+#include <Arduino.h>
 #endif
 
 /**
@@ -32,19 +33,18 @@ private:
   RealDependency1 dependency1;
   RealDependency2 dependency2;
 #endif
-  int someState;
+  int someState{0};
 
 public:
 #ifdef UNIT_TEST
   // Constructor for test environment
   ExampleClass(std::shared_ptr<MockDependency1> dep1, std::shared_ptr<MockDependency2> dep2)
-    : dependency1(dep1), dependency2(dep2), someState(0) {
+    : dependency1(std::move(dep1)), dependency2(std::move(dep2)) {
     // Test-specific initialization
   }
 #else
   // Constructor for production environment
-  ExampleClass(int pin1, int pin2)
-    : dependency1(pin1), dependency2(pin2), someState(0) {
+  ExampleClass(int pin1, int pin2) : dependency1(pin1), dependency2(pin2) {
     // Production-specific initialization
     pinMode(pin1, OUTPUT);
     pinMode(pin2, INPUT);
@@ -65,9 +65,7 @@ public:
     someState = result;
   }
 
-  int getState() const {
-    return someState;
-  }
+  [[nodiscard]] int getState() const { return someState; }
 };
 
 #endif // EXAMPLE_TESTABLE_CLASS_H

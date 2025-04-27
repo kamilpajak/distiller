@@ -20,4 +20,5 @@ SpaceBeforeAssignmentOperators: true
 AlignAfterOpenBracket: Align
 AlignOperands: true
 AlignEscapedNewlines: Left
-SortIncludes: true
+SortIncludes: CaseSensitive
+IncludeBlocks: Regroup

@@ -1,5 +1,7 @@
-#include <gtest/gtest.h>
+#include "../src/constants.h"
+
 #include <gmock/gmock.h>
+#include <gtest/gtest.h>
 #include <memory>
 
 // Define UNIT_TEST for conditional compilation
@@ -37,7 +39,7 @@ protected:
 
 /**
  * @brief Test case for InitialStateIsZero.
- * 
+ *
  * Given a new ExampleClass object is created.
  * When the state is checked.
  * Then it should be zero.
@@ -49,42 +51,37 @@ TEST_F(ExampleClassTest, InitialStateIsZero) {
 
 /**
  * @brief Test case for DoSomethingUpdatesState.
- * 
+ *
  * Given an ExampleClass object.
  * When doSomething is called.
  * Then the state should be updated based on the dependency's return value.
  */
 TEST_F(ExampleClassTest, DoSomethingUpdatesState) {
   // Arrange
-  EXPECT_CALL(*dependency1, method1())
-    .Times(1);
-  
-  EXPECT_CALL(*dependency2, method2())
-    .WillOnce(::testing::Return(42));
-  
+  EXPECT_CALL(*dependency1, method1()).Times(1);
+
+  EXPECT_CALL(*dependency2, method2()).WillOnce(::testing::Return(TEST_RETURN_VALUE));
+
   // Act
   exampleClass->doSomething();
-  
+
   // Assert
-  EXPECT_EQ(42, exampleClass->getState());
+  EXPECT_EQ(TEST_RETURN_VALUE, exampleClass->getState());
 }
 
 /**
  * @brief Test case for DoSomethingCallsDependencies.
- * 
+ *
  * Given an ExampleClass object.
  * When doSomething is called.
  * Then the dependencies' methods should be called the expected number of times.
  */
 TEST_F(ExampleClassTest, DoSomethingCallsDependencies) {
   // Arrange
-  EXPECT_CALL(*dependency1, method1())
-    .Times(1);
-  
-  EXPECT_CALL(*dependency2, method2())
-    .Times(1)
-    .WillOnce(::testing::Return(0));
-  
+  EXPECT_CALL(*dependency1, method1()).Times(1);
+
+  EXPECT_CALL(*dependency2, method2()).Times(1).WillOnce(::testing::Return(0));
+
   // Act
   exampleClass->doSomething();
 }

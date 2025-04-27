@@ -1,30 +1,30 @@
 #ifndef FLOW_CONTROLLER_H
 #define FLOW_CONTROLLER_H
 
-#ifndef UNIT_TEST
-#include "PID_v1.h"
-#endif
+#include "../include/PID_v1.h"
 #include "constants.h"
 #include "scale_controller.h"
 #include "valve_controller.h"
+
+#include <cmath> // For std::abs
 
 /**
  * Class for handling flow control.
  */
 class FlowController {
 private:
-  ValveController *valveController; /**< Pointer to ValveController object for controlling valves. */
-  ScaleController *scaleController; /**< Pointer to ScaleController object for controlling scales. */
-  double input, output, setpoint;   /**< Variables for PID control. */
-  PID pid;                          /**< PID object for flow control. */
-  double flowRate;                  /**< Flow rate in ml/min. */
-  unsigned long startTime;          /**< Time at the start of the state. */
-  double startVolume;               /**< Alcohol volume at the start of the state. */
+  ValveController *valveController;        /**< Pointer to ValveController object for controlling valves. */
+  ScaleController *scaleController;        /**< Pointer to ScaleController object for controlling scales. */
+  double input{0}, output{0}, setpoint{0}; /**< Variables for PID control. */
+  PID pid;                                 /**< PID object for flow control. */
+  double flowRate{0};                      /**< Flow rate in ml/min. */
+  unsigned long startTime{0};              /**< Time at the start of the state. */
+  double startVolume{0};                   /**< Alcohol volume at the start of the state. */
 
   /**
    * Returns the current volume of alcohol.
    */
-  double getCurrentVolume() {
+  [[nodiscard]] double getCurrentVolume() {
     return scaleController->getWeight(DistillationStateManager::getInstance().getState()) / ALCOHOL_DENSITY;
   }
 
@@ -35,8 +35,8 @@ public:
    * @param scaleController Pointer to ScaleController object for controlling scales.
    */
   FlowController(ValveController *valveController, ScaleController *scaleController)
-    : valveController(valveController), scaleController(scaleController), input(0), output(0), setpoint(0),
-      pid(&input, &output, &setpoint, 2, 5, 1, DIRECT), flowRate(0), startTime(0), startVolume(0) {
+    : valveController(valveController), scaleController(scaleController),
+      pid(&input, &output, &setpoint, TEST_PID_KP, TEST_PID_KI, TEST_PID_KD, DIRECT) {
     pid.SetMode(AUTOMATIC);
     valveController->closeMainValve();
   }
@@ -45,7 +45,7 @@ public:
    * Returns the current flow rate.
    * @return The current flow rate in ml/min.
    */
-  double getFlowRate() { return flowRate; }
+  [[nodiscard]] double getFlowRate() const { return flowRate; }
 
   /**
    * Sets and controls the flow rate.
@@ -63,7 +63,7 @@ public:
     const double epsilon = 0.001;
 
     // Check if the new flow rate is significantly different from the current one
-    if (abs(newFlowRate - flowRate) > epsilon) {
+    if (std::abs(newFlowRate - flowRate) > epsilon) {
       flowRate = newFlowRate;
       startVolume = getCurrentVolume();
       startTime = millis();
@@ -75,13 +75,13 @@ public:
     }
 
     unsigned long currentMillis = millis();
-    float elapsedTimeInMinutes = (currentMillis - startTime) / 60000.0;
-    float expectedVolume = flowRate * elapsedTimeInMinutes;
-    float currentVolume = getCurrentVolume();
+    double elapsedTimeInMinutes = static_cast<double>(currentMillis - startTime) / MS_TO_MINUTES;
+    double expectedVolume = flowRate * elapsedTimeInMinutes;
+    double currentVolume = getCurrentVolume();
     input = expectedVolume - (currentVolume - startVolume);
-    pid.Compute();
+    PID::Compute();
 
-    float tolerance = 0.1;
+    double tolerance = TEST_TOLERANCE;
     if (output > tolerance) {
       valveController->openMainValve();
     } else if (output < -tolerance) {

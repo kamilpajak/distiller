@@ -2,19 +2,24 @@
 #define LCD_H
 
 #ifndef UNIT_TEST
-#include <Wire.h>
-#include <hd44780.h>
-#include <hd44780ioClass/hd44780_I2Cexp.h>
+#include "../include/Arduino.h"
+#include "../include/Wire.h"
+#include "../include/hd44780.h"
+#include "../include/hd44780ioClass/hd44780_I2Cexp.h"
 #endif
 
-#define MULTIPLEXER_ADDRESS 0x70
+#include <cstdint>
+
+// Constants
+constexpr uint8_t MULTIPLEXER_ADDRESS = 0x70;
+constexpr uint8_t CHANNEL_SWITCH_DELAY_MS = 100;
 
 class Lcd {
 private:
 #ifndef UNIT_TEST
-  hd44780_I2Cexp lcd; // LCD object
+  Hd44780I2Cexp lcd; // LCD object
 #endif
-  uint8_t channel;    // I2C multiplexer channel
+  uint8_t channel; // I2C multiplexer channel
   int lcdCols, lcdRows;
 
 public:
@@ -43,11 +48,11 @@ public:
 
 private:
   // Selects the correct I2C channel on the multiplexer
-  void selectChannel(uint8_t channel) {
+  static void selectChannel(uint8_t channel) {
     Wire.beginTransmission(MULTIPLEXER_ADDRESS);
-    Wire.write(1 << channel);
-    Wire.endTransmission();
-    delay(100); // Ensure channel switching
+    TwoWire::write(1 << channel);
+    TwoWire::endTransmission();
+    delay(CHANNEL_SWITCH_DELAY_MS); // Ensure channel switching
   }
 #endif
 };

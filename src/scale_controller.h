@@ -48,7 +48,7 @@ public:
    * @param state The distillate state for which to get the weight.
    * @return The weight of the distillate.
    */
-  double getWeight(DistillationState state) const {
+  [[nodiscard]] double getWeight(DistillationState state) const {
     switch (state) {
     case EARLY_FORESHOTS:
       return earlyForeshotsScale.getWeight();

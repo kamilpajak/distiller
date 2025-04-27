@@ -1,15 +1,18 @@
 #ifndef HEATER_CONTROLLER_H
 #define HEATER_CONTROLLER_H
 
+#include "constants.h"
 #include "relay.h"
+
+#include <array>
 
 /**
  * Class for controlling heaters.
  */
 class HeaterController {
 private:
-  Relay *heaters[3]; /**< Array of pointers to Relay objects for controlling the heaters. */
-  int power;         /**< Power level of the heaters. */
+  std::array<Relay *, 3> heaters; /**< Array of pointers to Relay objects for controlling the heaters. */
+  int power{0};                   /**< Power level of the heaters. */
 
 public:
   /**
@@ -18,7 +21,7 @@ public:
    * @param relay2 Relay object for the second heater.
    * @param relay3 Relay object for the third heater.
    */
-  HeaterController(Relay &relay1, Relay &relay2, Relay &relay3) : heaters{&relay1, &relay2, &relay3}, power(0) {}
+  HeaterController(Relay &relay1, Relay &relay2, Relay &relay3) : heaters{&relay1, &relay2, &relay3} {}
 
   /**
    * Sets the power level of the heaters.
@@ -29,9 +32,9 @@ public:
     int remainingPower = power;
 
     // Determine the state of each heater
-    bool heaterStates[3] = {false, false, false};
+    std::array<bool, 3> heaterStates = {false, false, false};
     for (int i = 2; i >= 0; i--) {
-      int heaterPower = (i + 1) * 1000;
+      int heaterPower = (i + 1) * HEATER_POWER_LEVEL_1;
       if (remainingPower >= heaterPower) {
         heaterStates[i] = true;
         remainingPower -= heaterPower;
@@ -52,7 +55,7 @@ public:
    * Returns the current power level of the heaters.
    * @return The current power level (0-6000).
    */
-  int getPower() { return power; }
+  [[nodiscard]] int getPower() const { return power; }
 };
 
 #endif // HEATER_CONTROLLER_H

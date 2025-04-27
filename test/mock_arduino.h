@@ -24,32 +24,28 @@ const int LOW = 0;
 // ArduinoMockFixture class for pin operations
 class ArduinoMockFixture {
 public:
-    MOCK_METHOD(void, Call, (int, int), (const));
-    
-    static ArduinoMockFixture& mockPinMode() {
-        static ArduinoMockFixture instance;
-        return instance;
-    }
-    
-    static ArduinoMockFixture& mockDigitalWrite() {
-        static ArduinoMockFixture instance;
-        return instance;
-    }
-    
-    static void reset() {
-        testing::Mock::VerifyAndClearExpectations(&mockPinMode());
-        testing::Mock::VerifyAndClearExpectations(&mockDigitalWrite());
-    }
+  MOCK_METHOD(void, Call, (int, int), (const));
+
+  static ArduinoMockFixture &mockPinMode() {
+    static ArduinoMockFixture instance;
+    return instance;
+  }
+
+  static ArduinoMockFixture &mockDigitalWrite() {
+    static ArduinoMockFixture instance;
+    return instance;
+  }
+
+  static void reset() {
+    testing::Mock::VerifyAndClearExpectations(&mockPinMode());
+    testing::Mock::VerifyAndClearExpectations(&mockDigitalWrite());
+  }
 };
 
 // Arduino function mocks
-inline void pinMode(int pin, int mode) {
-    ArduinoMockFixture::mockPinMode().Call(pin, mode);
-}
+inline void pinMode(int pin, int mode) { ArduinoMockFixture::mockPinMode().Call(pin, mode); }
 
-inline void digitalWrite(int pin, int value) {
-    ArduinoMockFixture::mockDigitalWrite().Call(pin, value);
-}
+inline void digitalWrite(int pin, int value) { ArduinoMockFixture::mockDigitalWrite().Call(pin, value); }
 
 #endif // UNIT_TEST
 #endif // MOCK_ARDUINO_H

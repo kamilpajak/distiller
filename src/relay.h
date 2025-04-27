@@ -6,15 +6,15 @@
  */
 class Relay {
 private:
-  int pin;   /**< The pin number for the relay. */
-  bool isOn; /**< The state of the relay. */
+  int pin;          /**< The pin number for the relay. */
+  bool isOn{false}; /**< The state of the relay. */
 
 public:
   /**
    * Constructor for the Relay class.
    * @param pin The pin number for the relay.
    */
-  explicit Relay(int pin) : pin(pin), isOn(false) {
+  explicit Relay(int pin) : pin(pin) {
     pinMode(pin, OUTPUT);
     digitalWrite(pin, LOW);
   }

@@ -79,6 +79,11 @@ desktop.ini
 # Project specific
 src/arduino_secrets.h
 
+# Generated files
+compile_commands.json
+/include/*
+/src/mock_arduino.h
+
 # Project documentation
 # memory-bank/
 
