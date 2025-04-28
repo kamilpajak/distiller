@@ -36,9 +36,14 @@ private:
   DistillationStateManager() = default;
 
 public:
-  // Deleted copy constructor and assignment operator to prevent copying.
+  // Rule of five: deleted copy/move constructors and assignment operators to prevent copying/moving.
   DistillationStateManager(const DistillationStateManager &) = delete;
   DistillationStateManager &operator=(const DistillationStateManager &) = delete;
+  DistillationStateManager(DistillationStateManager &&) = delete;
+  DistillationStateManager &operator=(DistillationStateManager &&) = delete;
+  
+  // Virtual destructor for proper cleanup in case of inheritance
+  virtual ~DistillationStateManager() = default;
 
   // Static method to control access to the singleton instance.
   static DistillationStateManager &getInstance() {

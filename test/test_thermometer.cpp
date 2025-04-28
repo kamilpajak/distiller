@@ -1,15 +1,9 @@
 #include "../src/constants.h"
+#include "test_constants.h"
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include <memory>
-
-// Define test-specific constants for temperature values
-constexpr float TEST_TEMP_BASE = 20.0F;
-constexpr float TEST_TEMP_SMALL_INCREMENT = 0.1F;
-constexpr float TEST_TEMP_MEDIUM_INCREMENT = 1.0F;
-constexpr float TEST_TEMP_LARGE_INCREMENT = 2.0F;
-constexpr float TEST_TEMP_SUDDEN_INCREASE = 5.0F;
 
 // Define UNIT_TEST if not already defined
 #ifndef UNIT_TEST
@@ -19,7 +13,7 @@ constexpr float TEST_TEMP_SUDDEN_INCREASE = 5.0F;
 // Include the Thermometer class (now with conditional compilation)
 #include "../src/thermometer.h"
 
-class ThermometerTest : public ::testing::Test {
+class ThermometerTest : public ::testing::Test { // NOLINT(cppcoreguidelines-non-private-member-variables-in-classes)
 protected:
   std::shared_ptr<MockOneWire> oneWire;
   std::shared_ptr<MockDallasTemperature> sensors;
@@ -39,16 +33,16 @@ protected:
  * When getTemperature is called.
  * Then it should return the median of the readings.
  */
-TEST_F(ThermometerTest, GetTemperatureReturnsMedian) {
+TEST_F(ThermometerTest, GetTemperatureReturnsMedian) { // NOLINT(cppcoreguidelines-owning-memory)
   // Arrange
   EXPECT_CALL(*sensors, requestTemperatures()).Times(READINGS_ARRAY_SIZE);
 
   EXPECT_CALL(*sensors, getTempCByIndex(0))
-      .WillOnce(::testing::Return(TEST_TEMP_BASE))
-      .WillOnce(::testing::Return(TEST_TEMP_BASE + TEST_TEMP_LARGE_INCREMENT))
-      .WillOnce(::testing::Return(TEST_TEMP_BASE + TEST_TEMP_MEDIUM_INCREMENT))
-      .WillOnce(::testing::Return(TEST_TEMP_BASE + TEST_TEMP_LARGE_INCREMENT + TEST_TEMP_MEDIUM_INCREMENT))
-      .WillOnce(::testing::Return(TEST_TEMP_BASE - TEST_TEMP_MEDIUM_INCREMENT));
+      .WillOnce(::testing::Return(temperature::BASE))
+      .WillOnce(::testing::Return(temperature::BASE + temperature::LARGE_INCREMENT))
+      .WillOnce(::testing::Return(temperature::BASE + temperature::MEDIUM_INCREMENT))
+      .WillOnce(::testing::Return(temperature::BASE + temperature::LARGE_INCREMENT + temperature::MEDIUM_INCREMENT))
+      .WillOnce(::testing::Return(temperature::BASE - temperature::MEDIUM_INCREMENT));
 
   // Act
   for (int i = 0; i < READINGS_ARRAY_SIZE; i++) {
@@ -56,7 +50,7 @@ TEST_F(ThermometerTest, GetTemperatureReturnsMedian) {
   }
 
   // Assert
-  EXPECT_FLOAT_EQ(TEST_TEMP_BASE + TEST_TEMP_MEDIUM_INCREMENT, thermometer->getTemperature());
+  EXPECT_FLOAT_EQ(temperature::BASE + temperature::MEDIUM_INCREMENT, thermometer->getTemperature());
 }
 
 /**
@@ -68,23 +62,25 @@ TEST_F(ThermometerTest, GetTemperatureReturnsMedian) {
  * When isSuddenTemperatureIncrease is called after the sudden increase readings.
  * Then it should return true.
  */
-TEST_F(ThermometerTest, DetectsSuddenTemperatureIncrease) {
+TEST_F(ThermometerTest, DetectsSuddenTemperatureIncrease) { // NOLINT(cppcoreguidelines-owning-memory)
   // Arrange
-  EXPECT_CALL(*sensors, requestTemperatures()).Times(10);
+  // Define a constant for the number of readings
+  constexpr int TOTAL_READINGS = 10;
+  EXPECT_CALL(*sensors, requestTemperatures()).Times(TOTAL_READINGS);
 
   // First 5 readings
   EXPECT_CALL(*sensors, getTempCByIndex(0))
-      .WillOnce(::testing::Return(TEST_TEMP_BASE))
-      .WillOnce(::testing::Return(TEST_TEMP_BASE + TEST_TEMP_SMALL_INCREMENT))
-      .WillOnce(::testing::Return(TEST_TEMP_BASE + (TEST_TEMP_SMALL_INCREMENT * 2)))
-      .WillOnce(::testing::Return(TEST_TEMP_BASE + TEST_TEMP_SMALL_INCREMENT))
-      .WillOnce(::testing::Return(TEST_TEMP_BASE))
+      .WillOnce(::testing::Return(temperature::BASE))
+      .WillOnce(::testing::Return(temperature::BASE + temperature::SMALL_INCREMENT))
+      .WillOnce(::testing::Return(temperature::BASE + (temperature::SMALL_INCREMENT * 2)))
+      .WillOnce(::testing::Return(temperature::BASE + temperature::SMALL_INCREMENT))
+      .WillOnce(::testing::Return(temperature::BASE))
       // Next 5 readings with a sudden increase
-      .WillOnce(::testing::Return(TEST_TEMP_BASE))
-      .WillOnce(::testing::Return(TEST_TEMP_BASE + TEST_TEMP_SMALL_INCREMENT))
-      .WillOnce(::testing::Return(TEST_TEMP_BASE + TEST_TEMP_SUDDEN_INCREASE)) // Sudden increase
-      .WillOnce(::testing::Return(TEST_TEMP_BASE + TEST_TEMP_SUDDEN_INCREASE + TEST_TEMP_SMALL_INCREMENT))
-      .WillOnce(::testing::Return(TEST_TEMP_BASE + TEST_TEMP_SUDDEN_INCREASE + (TEST_TEMP_SMALL_INCREMENT * 2)));
+      .WillOnce(::testing::Return(temperature::BASE))
+      .WillOnce(::testing::Return(temperature::BASE + temperature::SMALL_INCREMENT))
+      .WillOnce(::testing::Return(temperature::BASE + temperature::SUDDEN_INCREASE)) // Sudden increase
+      .WillOnce(::testing::Return(temperature::BASE + temperature::SUDDEN_INCREASE + temperature::SMALL_INCREMENT))
+      .WillOnce(::testing::Return(temperature::BASE + temperature::SUDDEN_INCREASE + (temperature::SMALL_INCREMENT * 2)));
 
   // Act & Assert
   // Fill the buffer with initial readings
@@ -114,14 +110,16 @@ TEST_F(ThermometerTest, DetectsSuddenTemperatureIncrease) {
  * When getLastTemperature is called.
  * Then it should return the value of the most recent reading.
  */
-TEST_F(ThermometerTest, GetLastTemperatureReturnsLastReading) {
+TEST_F(ThermometerTest, GetLastTemperatureReturnsLastReading) { // NOLINT(cppcoreguidelines-owning-memory)
   // Arrange
-  EXPECT_CALL(*sensors, requestTemperatures()).Times(3);
+  // Define a constant for the number of readings
+  constexpr int READING_COUNT = 3;
+  EXPECT_CALL(*sensors, requestTemperatures()).Times(READING_COUNT);
 
   EXPECT_CALL(*sensors, getTempCByIndex(0))
-      .WillOnce(::testing::Return(TEST_TEMP_BASE))
-      .WillOnce(::testing::Return(TEST_TEMP_BASE + TEST_TEMP_MEDIUM_INCREMENT))
-      .WillOnce(::testing::Return(TEST_TEMP_BASE + (TEST_TEMP_MEDIUM_INCREMENT * 2)));
+      .WillOnce(::testing::Return(temperature::BASE))
+      .WillOnce(::testing::Return(temperature::BASE + temperature::MEDIUM_INCREMENT))
+      .WillOnce(::testing::Return(temperature::BASE + (temperature::MEDIUM_INCREMENT * 2)));
 
   // Act
   thermometer->updateTemperature();
@@ -129,5 +127,5 @@ TEST_F(ThermometerTest, GetLastTemperatureReturnsLastReading) {
   thermometer->updateTemperature();
 
   // Assert
-  EXPECT_FLOAT_EQ(TEST_TEMP_BASE + (TEST_TEMP_MEDIUM_INCREMENT * 2), thermometer->getLastTemperature());
+  EXPECT_FLOAT_EQ(temperature::BASE + (temperature::MEDIUM_INCREMENT * 2), thermometer->getLastTemperature());
 }

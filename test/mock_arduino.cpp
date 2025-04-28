@@ -2,7 +2,7 @@
 #include "mock_arduino.h"
 
 // Global variable to control mock time
-unsigned long mock_millis_time = 0;
+unsigned long mock_millis_time = 0; // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
 
 // Mock millis() function
 unsigned long millis() { return mock_millis_time; }

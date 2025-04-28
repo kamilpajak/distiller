@@ -5,7 +5,7 @@
 #include <gmock/gmock.h>
 
 // Global variable to control mock time
-extern unsigned long mock_millis_time;
+extern unsigned long mock_millis_time; // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
 
 // Mock millis() function
 unsigned long millis();

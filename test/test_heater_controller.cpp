@@ -1,7 +1,10 @@
 #include "../src/constants.h"
+#include "test_constants.h"
 
-// Define a test-specific constant for the non-standard power level
-constexpr int TEST_HEATER_POWER_LEVEL_3001 = 3001;
+// Define constants for array sizes
+namespace {
+  constexpr size_t HEATER_COUNT = 3;
+}
 
 #include <array>
 #include <gmock/gmock.h>
@@ -32,7 +35,7 @@ public:
 // In a production environment, we would use conditional compilation in the original class
 class TestableHeaterController {
 private:
-  std::array<MockRelay *, 3> heaters;
+  std::array<MockRelay *, HEATER_COUNT> heaters;
   int power{0};
 
 public:
@@ -44,21 +47,21 @@ public:
     int remainingPower = power;
 
     // Determine the state of each heater
-    std::array<bool, 3> heaterStates = {false, false, false};
+    std::array<bool, HEATER_COUNT> heaterStates = {false, false, false};
     for (int i = 2; i >= 0; i--) {
       int heaterPower = (i + 1) * HEATER_POWER_LEVEL_1;
       if (remainingPower >= heaterPower) {
-        heaterStates[i] = true;
+        heaterStates[i] = true; // NOLINT(cppcoreguidelines-pro-bounds-constant-array-index)
         remainingPower -= heaterPower;
       }
     }
 
     // Update the state of each heater
     for (size_t i = 0; i < heaters.size(); i++) {
-      if (heaterStates[i]) {
-        heaters[i]->turnOn();
+      if (heaterStates[i]) { // NOLINT(cppcoreguidelines-pro-bounds-constant-array-index)
+        heaters[i]->turnOn(); // NOLINT(cppcoreguidelines-pro-bounds-constant-array-index)
       } else {
-        heaters[i]->turnOff();
+        heaters[i]->turnOff(); // NOLINT(cppcoreguidelines-pro-bounds-constant-array-index)
       }
     }
   }
@@ -66,7 +69,7 @@ public:
   [[nodiscard]] int getPower() const { return power; }
 };
 
-class HeaterControllerTest : public ::testing::Test {
+class HeaterControllerTest : public ::testing::Test { // NOLINT(cppcoreguidelines-non-private-member-variables-in-classes)
 protected:
   MockRelay relay1;
   MockRelay relay2;
@@ -83,7 +86,9 @@ protected:
  * When the power is checked.
  * Then it should be zero.
  */
-TEST_F(HeaterControllerTest, InitialPowerIsZero) { EXPECT_EQ(0, heaterController->getPower()); }
+TEST_F(HeaterControllerTest, InitialPowerIsZero) { // NOLINT(cppcoreguidelines-owning-memory)
+  EXPECT_EQ(0, heaterController->getPower());
+}
 
 /**
  * @brief Test case for SetPowerZeroTurnsOffAllHeaters.
@@ -92,7 +97,7 @@ TEST_F(HeaterControllerTest, InitialPowerIsZero) { EXPECT_EQ(0, heaterController
  * When the power is set to zero.
  * Then all heaters should be turned off.
  */
-TEST_F(HeaterControllerTest, SetPowerZeroTurnsOffAllHeaters) {
+TEST_F(HeaterControllerTest, SetPowerZeroTurnsOffAllHeaters) { // NOLINT(cppcoreguidelines-owning-memory)
   // Arrange
   EXPECT_CALL(relay1, turnOff()).Times(1);
   EXPECT_CALL(relay2, turnOff()).Times(1);
@@ -112,17 +117,17 @@ TEST_F(HeaterControllerTest, SetPowerZeroTurnsOffAllHeaters) {
  * When the power is set to 1000.
  * Then only heater 1 should be turned on.
  */
-TEST_F(HeaterControllerTest, SetPower1000TurnsOnHeater1Only) {
+TEST_F(HeaterControllerTest, SetPower1000TurnsOnHeater1Only) { // NOLINT(cppcoreguidelines-owning-memory)
   // Arrange
   EXPECT_CALL(relay1, turnOn()).Times(1);
   EXPECT_CALL(relay2, turnOff()).Times(1);
   EXPECT_CALL(relay3, turnOff()).Times(1);
 
   // Act
-  heaterController->setPower(HEATER_POWER_LEVEL_1);
+  heaterController->setPower(heater::POWER_LEVEL_1);
 
   // Assert
-  EXPECT_EQ(1000, heaterController->getPower());
+  EXPECT_EQ(heater::POWER_LEVEL_1, heaterController->getPower());
 }
 
 /**
@@ -132,17 +137,17 @@ TEST_F(HeaterControllerTest, SetPower1000TurnsOnHeater1Only) {
  * When the power is set to 2000.
  * Then only heater 2 should be turned on.
  */
-TEST_F(HeaterControllerTest, SetPower2000TurnsOnHeater2Only) {
+TEST_F(HeaterControllerTest, SetPower2000TurnsOnHeater2Only) { // NOLINT(cppcoreguidelines-owning-memory)
   // Arrange
   EXPECT_CALL(relay1, turnOff()).Times(1);
   EXPECT_CALL(relay2, turnOn()).Times(1);
   EXPECT_CALL(relay3, turnOff()).Times(1);
 
   // Act
-  heaterController->setPower(HEATER_POWER_LEVEL_2);
+  heaterController->setPower(heater::POWER_LEVEL_2);
 
   // Assert
-  EXPECT_EQ(2000, heaterController->getPower());
+  EXPECT_EQ(heater::POWER_LEVEL_2, heaterController->getPower());
 }
 
 /**
@@ -152,17 +157,17 @@ TEST_F(HeaterControllerTest, SetPower2000TurnsOnHeater2Only) {
  * When the power is set to 3000.
  * Then only heater 3 should be turned on.
  */
-TEST_F(HeaterControllerTest, SetPower3000TurnsOnHeater3Only) {
+TEST_F(HeaterControllerTest, SetPower3000TurnsOnHeater3Only) { // NOLINT(cppcoreguidelines-owning-memory)
   // Arrange
   EXPECT_CALL(relay1, turnOff()).Times(1);
   EXPECT_CALL(relay2, turnOff()).Times(1);
   EXPECT_CALL(relay3, turnOn()).Times(1);
 
   // Act
-  heaterController->setPower(HEATER_POWER_LEVEL_3);
+  heaterController->setPower(heater::POWER_LEVEL_3);
 
   // Assert
-  EXPECT_EQ(3000, heaterController->getPower());
+  EXPECT_EQ(heater::POWER_LEVEL_3, heaterController->getPower());
 }
 
 /**
@@ -172,17 +177,17 @@ TEST_F(HeaterControllerTest, SetPower3000TurnsOnHeater3Only) {
  * When the power is set to 3001.
  * Then only heater 3 should be turned on (as it's the highest power heater).
  */
-TEST_F(HeaterControllerTest, SetPower3001TurnsOnHeater3Only) {
+TEST_F(HeaterControllerTest, SetPower3001TurnsOnHeater3Only) { // NOLINT(cppcoreguidelines-owning-memory)
   // Arrange
   EXPECT_CALL(relay1, turnOff()).Times(1);
   EXPECT_CALL(relay2, turnOff()).Times(1);
   EXPECT_CALL(relay3, turnOn()).Times(1);
 
   // Act
-  heaterController->setPower(TEST_HEATER_POWER_LEVEL_3001);
+  heaterController->setPower(heater::POWER_LEVEL_OVER_MAX);
 
   // Assert
-  EXPECT_EQ(3001, heaterController->getPower());
+  EXPECT_EQ(heater::POWER_LEVEL_OVER_MAX, heaterController->getPower());
 }
 
 /**
@@ -192,17 +197,17 @@ TEST_F(HeaterControllerTest, SetPower3001TurnsOnHeater3Only) {
  * When the power is set to 6000.
  * Then all heaters should be turned on.
  */
-TEST_F(HeaterControllerTest, SetPower6000TurnsOnAllHeaters) {
+TEST_F(HeaterControllerTest, SetPower6000TurnsOnAllHeaters) { // NOLINT(cppcoreguidelines-owning-memory)
   // Arrange
   EXPECT_CALL(relay1, turnOn()).Times(1);
   EXPECT_CALL(relay2, turnOn()).Times(1);
   EXPECT_CALL(relay3, turnOn()).Times(1);
 
   // Act
-  heaterController->setPower(HEATER_POWER_LEVEL_MAX);
+  heaterController->setPower(heater::POWER_LEVEL_MAX);
 
   // Assert
-  EXPECT_EQ(6000, heaterController->getPower());
+  EXPECT_EQ(heater::POWER_LEVEL_MAX, heaterController->getPower());
 }
 
 #endif // UNIT_TEST

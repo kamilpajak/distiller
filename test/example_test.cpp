@@ -24,7 +24,7 @@ public:
 // This will use the UNIT_TEST path in the conditional compilation
 #include "example_testable_class.h"
 
-class ExampleClassTest : public ::testing::Test {
+class ExampleClassTest : public ::testing::Test { // NOLINT(cppcoreguidelines-non-private-member-variables-in-classes)
 protected:
   std::shared_ptr<MockDependency1> dependency1;
   std::shared_ptr<MockDependency2> dependency2;
@@ -44,7 +44,7 @@ protected:
  * When the state is checked.
  * Then it should be zero.
  */
-TEST_F(ExampleClassTest, InitialStateIsZero) {
+TEST_F(ExampleClassTest, InitialStateIsZero) { // NOLINT(cppcoreguidelines-owning-memory)
   // Assert
   EXPECT_EQ(0, exampleClass->getState());
 }
@@ -56,7 +56,7 @@ TEST_F(ExampleClassTest, InitialStateIsZero) {
  * When doSomething is called.
  * Then the state should be updated based on the dependency's return value.
  */
-TEST_F(ExampleClassTest, DoSomethingUpdatesState) {
+TEST_F(ExampleClassTest, DoSomethingUpdatesState) { // NOLINT(cppcoreguidelines-owning-memory)
   // Arrange
   EXPECT_CALL(*dependency1, method1()).Times(1);
 
@@ -76,7 +76,7 @@ TEST_F(ExampleClassTest, DoSomethingUpdatesState) {
  * When doSomething is called.
  * Then the dependencies' methods should be called the expected number of times.
  */
-TEST_F(ExampleClassTest, DoSomethingCallsDependencies) {
+TEST_F(ExampleClassTest, DoSomethingCallsDependencies) { // NOLINT(cppcoreguidelines-owning-memory)
   // Arrange
   EXPECT_CALL(*dependency1, method1()).Times(1);
 

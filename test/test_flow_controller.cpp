@@ -1,4 +1,5 @@
 #include "../src/constants.h"
+#include "test_constants.h"
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
@@ -18,7 +19,7 @@
 
 // Mock Arduino functions
 namespace ArduinoMock {
-static unsigned long currentMillis = 0;
+static unsigned long currentMillis = 0; // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
 
 unsigned long millis() { return currentMillis; }
 
@@ -144,7 +145,7 @@ public:
 #include <Arduino.h>
 #endif
 
-class FlowControllerTest : public ::testing::Test {
+class FlowControllerTest : public ::testing::Test { // NOLINT(cppcoreguidelines-non-private-member-variables-in-classes)
 protected:
   std::unique_ptr<MockValveController> valveController;
   std::unique_ptr<MockScaleController> scaleController;
@@ -187,7 +188,9 @@ protected:
  * When the flow rate is checked.
  * Then it should be zero.
  */
-TEST_F(FlowControllerTest, InitialFlowRateIsZero) { EXPECT_EQ(0, flowController->getFlowRate()); }
+TEST_F(FlowControllerTest, InitialFlowRateIsZero) { // NOLINT(cppcoreguidelines-owning-memory)
+  EXPECT_EQ(flow::ZERO_FLOW_RATE, flowController->getFlowRate());
+}
 
 /**
  * @brief Test case for SetFlowRateToZeroClosesMainValve.
@@ -196,15 +199,15 @@ TEST_F(FlowControllerTest, InitialFlowRateIsZero) { EXPECT_EQ(0, flowController-
  * When the flow rate is set to zero.
  * Then the main valve should be closed.
  */
-TEST_F(FlowControllerTest, SetFlowRateToZeroClosesMainValve) {
+TEST_F(FlowControllerTest, SetFlowRateToZeroClosesMainValve) { // NOLINT(cppcoreguidelines-owning-memory)
   // Arrange
   EXPECT_CALL(*valveController, closeMainValve()).Times(1);
 
   // Act
-  flowController->setAndControlFlowRate(0);
+  flowController->setAndControlFlowRate(flow::ZERO_FLOW_RATE);
 
   // Assert
-  EXPECT_EQ(0, flowController->getFlowRate());
+  EXPECT_EQ(flow::ZERO_FLOW_RATE, flowController->getFlowRate());
 }
 
 /**
@@ -214,28 +217,28 @@ TEST_F(FlowControllerTest, SetFlowRateToZeroClosesMainValve) {
  * When the flow rate is set to a positive value.
  * Then the main valve should be opened.
  */
-TEST_F(FlowControllerTest, SetFlowRateToPositiveValueOpensMainValveWhenBehindTarget) {
+TEST_F(FlowControllerTest, SetFlowRateToPositiveValueOpensMainValveWhenBehindTarget) { // NOLINT(cppcoreguidelines-owning-memory)
   // Arrange
   EXPECT_CALL(stateManager, getState()).WillRepeatedly(::testing::Return(HEARTS));
 
   // Expect two calls to getWeight in setAndControlFlowRate
   EXPECT_CALL(*scaleController, getWeight(HEARTS))
       .Times(2)
-      .WillRepeatedly(::testing::Return(0.0)); // Simulate no weight change
+      .WillRepeatedly(::testing::Return(weight::ZERO_WEIGHT)); // Simulate no weight change
 
   // Expect Compute to be called and set output to a positive value
   EXPECT_CALL(*pid, Compute())
-      .WillOnce(::testing::DoAll(::testing::Assign(&output, 1.0),
+      .WillOnce(::testing::DoAll(::testing::Assign(&output, pid::POSITIVE_OUTPUT),
                                  ::testing::Return(true))); // Simulate PID output > tolerance
 
   // Expect openMainValve to be called once
   EXPECT_CALL(*valveController, openMainValve()).Times(1);
 
   // Act
-  flowController->setAndControlFlowRate(10.0);
+  flowController->setAndControlFlowRate(flow::DEFAULT_FLOW_RATE);
 
   // Assert
-  EXPECT_EQ(10.0, flowController->getFlowRate());
+  EXPECT_EQ(flow::DEFAULT_FLOW_RATE, flowController->getFlowRate());
 }
 
 /**
@@ -245,32 +248,32 @@ TEST_F(FlowControllerTest, SetFlowRateToPositiveValueOpensMainValveWhenBehindTar
  * When setAndControlFlowRate is called.
  * Then the main valve should be closed.
  */
-TEST_F(FlowControllerTest, ClosesMainValveWhenAheadOfTarget) {
+TEST_F(FlowControllerTest, ClosesMainValveWhenAheadOfTarget) { // NOLINT(cppcoreguidelines-owning-memory)
   // Arrange
   EXPECT_CALL(stateManager, getState()).WillRepeatedly(::testing::Return(HEARTS));
 
   // Expect calls to getWeight - now expecting 3 calls
   EXPECT_CALL(*scaleController, getWeight(HEARTS))
-      .WillOnce(::testing::Return(0.0))                     // First call in initial setAndControlFlowRate
-      .WillOnce(::testing::Return(20.0 * ALCOHOL_DENSITY))  // Second call after advancing time
-      .WillOnce(::testing::Return(20.0 * ALCOHOL_DENSITY)); // Third call in the second setAndControlFlowRate
+      .WillOnce(::testing::Return(weight::ZERO_WEIGHT))     // First call in initial setAndControlFlowRate
+      .WillOnce(::testing::Return(weight::EXPECTED_WEIGHT_20ML))  // Second call after advancing time
+      .WillOnce(::testing::Return(weight::EXPECTED_WEIGHT_20ML)); // Third call in the second setAndControlFlowRate
 
   // Set initial flow rate
-  flowController->setAndControlFlowRate(10.0);
+  flowController->setAndControlFlowRate(flow::DEFAULT_FLOW_RATE);
 
   // Advance time by 1 minute
-  ArduinoMock::advanceMillis(60000);
+  ArduinoMock::advanceMillis(test_time::ONE_MINUTE_MS);
 
   // Expect Compute to be called and set output to a negative value
   EXPECT_CALL(*pid, Compute())
-      .WillOnce(::testing::DoAll(::testing::Assign(&output, -1.0),
+      .WillOnce(::testing::DoAll(::testing::Assign(&output, pid::NEGATIVE_OUTPUT),
                                  ::testing::Return(true))); // Simulate PID output < -tolerance
 
   // Expect closeMainValve to be called once
   EXPECT_CALL(*valveController, closeMainValve()).Times(1);
 
   // Act
-  flowController->setAndControlFlowRate(10.0);
+  flowController->setAndControlFlowRate(flow::DEFAULT_FLOW_RATE);
 }
 
 /**
@@ -280,25 +283,25 @@ TEST_F(FlowControllerTest, ClosesMainValveWhenAheadOfTarget) {
  * When setAndControlFlowRate is called.
  * Then no valve operations should occur.
  */
-TEST_F(FlowControllerTest, MaintainsFlowRateWhenOnTarget) {
+TEST_F(FlowControllerTest, MaintainsFlowRateWhenOnTarget) { // NOLINT(cppcoreguidelines-owning-memory)
   // Arrange
   EXPECT_CALL(stateManager, getState()).WillRepeatedly(::testing::Return(HEARTS));
 
   // Expect calls to getWeight - now expecting 3 calls
   EXPECT_CALL(*scaleController, getWeight(HEARTS))
-      .WillOnce(::testing::Return(0.0))                     // First call in initial setAndControlFlowRate
-      .WillOnce(::testing::Return(10.0 * ALCOHOL_DENSITY))  // Second call after advancing time
-      .WillOnce(::testing::Return(10.0 * ALCOHOL_DENSITY)); // Third call in the second setAndControlFlowRate
+      .WillOnce(::testing::Return(weight::ZERO_WEIGHT))     // First call in initial setAndControlFlowRate
+      .WillOnce(::testing::Return(weight::EXPECTED_WEIGHT_10ML))  // Second call after advancing time
+      .WillOnce(::testing::Return(weight::EXPECTED_WEIGHT_10ML)); // Third call in the second setAndControlFlowRate
 
   // Set initial flow rate
-  flowController->setAndControlFlowRate(10.0);
+  flowController->setAndControlFlowRate(flow::DEFAULT_FLOW_RATE);
 
   // Advance time by 1 minute
-  ArduinoMock::advanceMillis(60000);
+  ArduinoMock::advanceMillis(test_time::ONE_MINUTE_MS);
 
   // Expect Compute to be called and set output to a value within tolerance
   EXPECT_CALL(*pid, Compute())
-      .WillOnce(::testing::DoAll(::testing::Assign(&output, 0.05),
+      .WillOnce(::testing::DoAll(::testing::Assign(&output, pid::WITHIN_TOLERANCE_OUTPUT),
                                  ::testing::Return(true))); // Simulate PID output within tolerance
 
   // No valve operations expected since we're on target
@@ -306,5 +309,5 @@ TEST_F(FlowControllerTest, MaintainsFlowRateWhenOnTarget) {
   EXPECT_CALL(*valveController, closeMainValve()).Times(0);
 
   // Act
-  flowController->setAndControlFlowRate(10.0);
+  flowController->setAndControlFlowRate(flow::DEFAULT_FLOW_RATE);
 }

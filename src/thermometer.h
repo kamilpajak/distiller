@@ -6,6 +6,9 @@
 #include <algorithm>
 #include <array>
 #include <memory> // Required for std::shared_ptr
+#if __cplusplus >= 202002L
+#include <ranges>
+#endif
 
 #ifdef UNIT_TEST
 #include <gmock/gmock.h>
@@ -87,14 +90,14 @@ public:
     if (readingsCount == READINGS_ARRAY_SIZE) {
       lastMedian = getTemperature();
     }
-    readings[index] = sensors->getTempCByIndex(0);
+    readings[index] = sensors->getTempCByIndex(0); // NOLINT(cppcoreguidelines-pro-bounds-constant-array-index)
 #else
     sensors.requestTemperatures();
     // Update the last median before adding the new reading
     if (readingsCount == READINGS_ARRAY_SIZE) {
       lastMedian = getTemperature();
     }
-    readings[index] = sensors.getTempCByIndex(0);
+    readings[index] = sensors.getTempCByIndex(0); // NOLINT(cppcoreguidelines-pro-bounds-constant-array-index)
 #endif
     index = (index + 1) % READINGS_ARRAY_SIZE;
     readingsCount =
@@ -121,8 +124,13 @@ public:
    */
   [[nodiscard]] float getTemperature() const {
     std::array<float, READINGS_ARRAY_SIZE> sortedReadings{};
-    std::copy(readings.begin(), readings.end(), sortedReadings.begin());
-    std::sort(sortedReadings.begin(), sortedReadings.end());
+#if __cplusplus >= 202002L
+    std::ranges::copy(readings, sortedReadings.begin());
+    std::ranges::sort(sortedReadings);
+#else
+    std::copy(readings.begin(), readings.end(), sortedReadings.begin()); // NOLINT(modernize-use-ranges)
+    std::sort(sortedReadings.begin(), sortedReadings.end()); // NOLINT(modernize-use-ranges)
+#endif
     return sortedReadings[READINGS_ARRAY_MIDDLE_INDEX]; // return the median
   }
 
@@ -132,7 +140,7 @@ public:
    */
   [[nodiscard]] float getLastTemperature() const {
     int lastIndex = (index - 1 + READINGS_ARRAY_SIZE) % READINGS_ARRAY_SIZE; // calculate the index of the last reading
-    return readings[lastIndex];
+    return readings[lastIndex]; // NOLINT(cppcoreguidelines-pro-bounds-constant-array-index)
   }
 };
 

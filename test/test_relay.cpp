@@ -39,7 +39,7 @@ protected:
  * When a Relay object is initialized with the pin number.
  * Then pinMode should be called with OUTPUT and digitalWrite should be called with LOW.
  */
-TEST_F(RelayTest, InitializesCorrectly) {
+TEST_F(RelayTest, InitializesCorrectly) { // NOLINT(cppcoreguidelines-owning-memory)
   // Arrange
   const int pin = 5;
 
@@ -58,7 +58,7 @@ TEST_F(RelayTest, InitializesCorrectly) {
  * When turnOn is called.
  * Then digitalWrite should be called with HIGH.
  */
-TEST_F(RelayTest, TurnOnSetsOutputHigh) {
+TEST_F(RelayTest, TurnOnSetsOutputHigh) { // NOLINT(cppcoreguidelines-owning-memory)
   // Arrange
   const int pin = 5;
 
@@ -82,7 +82,7 @@ TEST_F(RelayTest, TurnOnSetsOutputHigh) {
  * When turnOff is called.
  * Then digitalWrite should be called with LOW.
  */
-TEST_F(RelayTest, TurnOffSetsOutputLow) {
+TEST_F(RelayTest, TurnOffSetsOutputLow) { // NOLINT(cppcoreguidelines-owning-memory)
   // Arrange
   const int pin = 5;
 
@@ -110,7 +110,7 @@ TEST_F(RelayTest, TurnOffSetsOutputLow) {
  * When turnOn is called again.
  * Then no further calls to digitalWrite should occur.
  */
-TEST_F(RelayTest, TurnOnDoesNothingIfAlreadyOn) {
+TEST_F(RelayTest, TurnOnDoesNothingIfAlreadyOn) { // NOLINT(cppcoreguidelines-owning-memory)
   // Arrange
   const int pin = 5;
 
@@ -135,7 +135,7 @@ TEST_F(RelayTest, TurnOnDoesNothingIfAlreadyOn) {
  * When turnOff is called again.
  * Then no further calls to digitalWrite should occur.
  */
-TEST_F(RelayTest, TurnOffDoesNothingIfAlreadyOff) {
+TEST_F(RelayTest, TurnOffDoesNothingIfAlreadyOff) { // NOLINT(cppcoreguidelines-owning-memory)
   // Arrange
   const int pin = 5;
 
