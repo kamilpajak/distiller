@@ -17,16 +17,8 @@
 #ifdef UNIT_TEST
 // Test environment - use mock classes and functions
 
-// Mock Arduino functions
-namespace ArduinoMock {
-static unsigned long currentMillis = 0; // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
-
-unsigned long millis() { return currentMillis; }
-
-void setMillis(unsigned long newMillis) { currentMillis = newMillis; }
-
-void advanceMillis(unsigned long millisToAdvance) { currentMillis += millisToAdvance; }
-} // namespace ArduinoMock
+// Include the mock Arduino functions
+#include "mock_arduino.h"
 
 // Mock PID class
 // This mocks the PID class from the PID_v1 library

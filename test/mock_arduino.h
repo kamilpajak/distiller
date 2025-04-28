@@ -4,9 +4,8 @@
 #ifdef UNIT_TEST
 #include <gmock/gmock.h>
 
-// Global variable to control mock time
-extern unsigned long mock_millis_time; // NOLINT(cppcoreguidelines-avoid-non-const-global-variables)
-
+// ArduinoMock namespace for time functions
+namespace ArduinoMock {
 // Mock millis() function
 unsigned long millis();
 
@@ -14,6 +13,12 @@ unsigned long millis();
 void setMillis(unsigned long newMillis);
 
 // Function to advance mock time (for simulating time passing)
+void advanceMillis(unsigned long millisToAdvance);
+} // namespace ArduinoMock
+
+// Global functions that delegate to ArduinoMock namespace
+unsigned long millis();
+void setMillis(unsigned long newMillis);
 void advanceMillis(unsigned long millisToAdvance);
 
 // Arduino constants

@@ -61,6 +61,12 @@ public:
   [[nodiscard]] DistillationState getState() const { return currentState; }
 
   [[nodiscard]] unsigned long getElapsedTime() const { return millis() - startTime; }
+  
+  // For testing purposes only
+  #ifdef UNIT_TEST
+  void setStartTime(unsigned long time) { startTime = time; }
+  unsigned long getStartTime() const { return startTime; }
+  #endif
 };
 
 #endif // DISTILLATION_STATE_MANAGER_H
