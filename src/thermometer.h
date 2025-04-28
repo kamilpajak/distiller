@@ -129,7 +129,7 @@ public:
     std::ranges::sort(sortedReadings);
 #else
     std::copy(readings.begin(), readings.end(), sortedReadings.begin()); // NOLINT(modernize-use-ranges)
-    std::sort(sortedReadings.begin(), sortedReadings.end()); // NOLINT(modernize-use-ranges)
+    std::sort(sortedReadings.begin(), sortedReadings.end());             // NOLINT(modernize-use-ranges)
 #endif
     return sortedReadings[READINGS_ARRAY_MIDDLE_INDEX]; // return the median
   }

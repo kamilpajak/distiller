@@ -217,7 +217,8 @@ TEST_F(FlowControllerTest, SetFlowRateToZeroClosesMainValve) { // NOLINT(cppcore
  * When the flow rate is set to a positive value.
  * Then the main valve should be opened.
  */
-TEST_F(FlowControllerTest, SetFlowRateToPositiveValueOpensMainValveWhenBehindTarget) { // NOLINT(cppcoreguidelines-owning-memory)
+TEST_F(FlowControllerTest,
+       SetFlowRateToPositiveValueOpensMainValveWhenBehindTarget) { // NOLINT(cppcoreguidelines-owning-memory)
   // Arrange
   EXPECT_CALL(stateManager, getState()).WillRepeatedly(::testing::Return(HEARTS));
 
@@ -254,7 +255,7 @@ TEST_F(FlowControllerTest, ClosesMainValveWhenAheadOfTarget) { // NOLINT(cppcore
 
   // Expect calls to getWeight - now expecting 3 calls
   EXPECT_CALL(*scaleController, getWeight(HEARTS))
-      .WillOnce(::testing::Return(weight::ZERO_WEIGHT))     // First call in initial setAndControlFlowRate
+      .WillOnce(::testing::Return(weight::ZERO_WEIGHT))           // First call in initial setAndControlFlowRate
       .WillOnce(::testing::Return(weight::EXPECTED_WEIGHT_20ML))  // Second call after advancing time
       .WillOnce(::testing::Return(weight::EXPECTED_WEIGHT_20ML)); // Third call in the second setAndControlFlowRate
 
@@ -289,7 +290,7 @@ TEST_F(FlowControllerTest, MaintainsFlowRateWhenOnTarget) { // NOLINT(cppcoregui
 
   // Expect calls to getWeight - now expecting 3 calls
   EXPECT_CALL(*scaleController, getWeight(HEARTS))
-      .WillOnce(::testing::Return(weight::ZERO_WEIGHT))     // First call in initial setAndControlFlowRate
+      .WillOnce(::testing::Return(weight::ZERO_WEIGHT))           // First call in initial setAndControlFlowRate
       .WillOnce(::testing::Return(weight::EXPECTED_WEIGHT_10ML))  // Second call after advancing time
       .WillOnce(::testing::Return(weight::EXPECTED_WEIGHT_10ML)); // Third call in the second setAndControlFlowRate
 

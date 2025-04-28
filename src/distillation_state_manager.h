@@ -41,7 +41,7 @@ public:
   DistillationStateManager &operator=(const DistillationStateManager &) = delete;
   DistillationStateManager(DistillationStateManager &&) = delete;
   DistillationStateManager &operator=(DistillationStateManager &&) = delete;
-  
+
   // Virtual destructor for proper cleanup in case of inheritance
   virtual ~DistillationStateManager() = default;
 

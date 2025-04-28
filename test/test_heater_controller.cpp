@@ -3,7 +3,7 @@
 
 // Define constants for array sizes
 namespace {
-  constexpr size_t HEATER_COUNT = 3;
+constexpr size_t HEATER_COUNT = 3;
 }
 
 #include <array>
@@ -58,7 +58,7 @@ public:
 
     // Update the state of each heater
     for (size_t i = 0; i < heaters.size(); i++) {
-      if (heaterStates[i]) { // NOLINT(cppcoreguidelines-pro-bounds-constant-array-index)
+      if (heaterStates[i]) {  // NOLINT(cppcoreguidelines-pro-bounds-constant-array-index)
         heaters[i]->turnOn(); // NOLINT(cppcoreguidelines-pro-bounds-constant-array-index)
       } else {
         heaters[i]->turnOff(); // NOLINT(cppcoreguidelines-pro-bounds-constant-array-index)
@@ -69,7 +69,8 @@ public:
   [[nodiscard]] int getPower() const { return power; }
 };
 
-class HeaterControllerTest : public ::testing::Test { // NOLINT(cppcoreguidelines-non-private-member-variables-in-classes)
+class HeaterControllerTest
+  : public ::testing::Test { // NOLINT(cppcoreguidelines-non-private-member-variables-in-classes)
 protected:
   MockRelay relay1;
   MockRelay relay2;

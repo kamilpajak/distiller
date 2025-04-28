@@ -80,7 +80,8 @@ TEST_F(ThermometerTest, DetectsSuddenTemperatureIncrease) { // NOLINT(cppcoregui
       .WillOnce(::testing::Return(temperature::BASE + temperature::SMALL_INCREMENT))
       .WillOnce(::testing::Return(temperature::BASE + temperature::SUDDEN_INCREASE)) // Sudden increase
       .WillOnce(::testing::Return(temperature::BASE + temperature::SUDDEN_INCREASE + temperature::SMALL_INCREMENT))
-      .WillOnce(::testing::Return(temperature::BASE + temperature::SUDDEN_INCREASE + (temperature::SMALL_INCREMENT * 2)));
+      .WillOnce(
+          ::testing::Return(temperature::BASE + temperature::SUDDEN_INCREASE + (temperature::SMALL_INCREMENT * 2)));
 
   // Act & Assert
   // Fill the buffer with initial readings
