@@ -16,6 +16,12 @@ The project is in its initial state with the following components implemented:
 - Main distillation process logic with different phases
 - Addressed several clang-tidy warnings (redefinition errors, static member access, redundant initializers, operator precedence)
 - Configured compilation database generation for improved static analysis
+- Fixed Google Mock issues with function pointers in TaskManagerIO by implementing an adapter/delegation pattern
+- Simplified development workflow by leveraging Docker container for consistent environment:
+  - Created `pio-tools.sh` script to run development tools in Docker container
+  - Configured Docker container to handle formatting, static analysis, and testing
+  - Updated documentation in DEVELOPMENT.md
+  - Ensured consistent development experience across different machines
 
 ## Next Steps
 
@@ -72,6 +78,13 @@ Potential next steps for the project include:
 
 4. **Valve Control**: The system ensures that only one distillate valve is open at a time, based on the current distillation state. This prevents mixing of different fractions.
 
+5. **Adapter/Delegation Pattern for Mocking**: To address Google Mock limitations with function pointers, we implemented an adapter/delegation pattern:
+   - Created an abstract base class (`TaskManagerBase`) with pure virtual methods
+   - Implemented a mock class that inherits from the base class
+   - Used Google Mock for simple methods
+   - Created custom implementations for function pointer methods that delegate to mockable methods
+   - This pattern allows for effective testing while maintaining code quality
+
 ## Important Patterns and Preferences
 
 ### Code Organization
@@ -105,6 +118,8 @@ Potential next steps for the project include:
 4. **Volume Measurement**: Accurate measurement of the volume of each fraction is crucial for quality control. The system uses weight measurements and density conversion for this purpose.
 
 5. **Static Analysis Configuration**: Correctly configuring static analysis tools like clang-tidy with a compilation database is essential for accurate and relevant code analysis. Incorrect configuration can lead to misleading warnings and errors.
+
+6. **Google Mock Limitations**: Google Mock has limitations when dealing with function pointers in C++, particularly with the MOCK_METHOD macro. These limitations require workarounds such as the adapter/delegation pattern to effectively test code that uses function pointers. Understanding these limitations is crucial for designing testable code.
 
 ### Process Insights
 

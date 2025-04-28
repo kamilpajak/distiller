@@ -100,7 +100,69 @@ taskManager.scheduleFixedRate(1000, [] {
 });
 ```
 
-### 5. State-Based Control Flow
+For testing, we've implemented a custom mock for TaskManagerIO using an adapter/delegation pattern to work around Google Mock limitations with function pointers:
+
+```cpp
+// Define an abstract base class for TaskManager
+class TaskManagerBase {
+public:
+  virtual ~TaskManagerBase() = default;
+  virtual void runLoop() = 0;
+  virtual void cancelTask(taskid_t taskId) = 0;
+  virtual taskid_t scheduleFixedRate(uint32_t rate, void (*callback)()) = 0;
+  virtual taskid_t scheduleFixedRate(uint32_t initialDelay, uint32_t rate, void (*callback)()) = 0;
+};
+
+// Create a mock implementation that uses Google Mock for the simple methods
+// but custom implementation for the problematic ones
+class TaskManager : public TaskManagerBase {
+public:
+  // Use Google Mock for simple methods
+  MOCK_METHOD(void, runLoop, (), (override));
+  MOCK_METHOD(void, cancelTask, (taskid_t taskId), (override));
+  
+  // Custom implementation for the problematic methods
+  taskid_t scheduleFixedRate(uint32_t rate, void (*callback)()) override {
+    // Call a mockable method that doesn't use function pointers
+    return mockScheduleFixedRate2(rate);
+  }
+  
+  taskid_t scheduleFixedRate(uint32_t initialDelay, uint32_t rate, void (*callback)()) override {
+    // Call a mockable method that doesn't use function pointers
+    return mockScheduleFixedRate3(initialDelay, rate);
+  }
+  
+  // Mock methods that can be used for expectations
+  MOCK_METHOD(taskid_t, mockScheduleFixedRate2, (uint32_t rate), ());
+  MOCK_METHOD(taskid_t, mockScheduleFixedRate3, (uint32_t initialDelay, uint32_t rate), ());
+};
+```
+
+### 5. Adapter/Delegation Pattern for Mocking
+
+To address Google Mock limitations with function pointers, we've implemented an adapter/delegation pattern. This pattern allows us to effectively test code that uses function pointers while maintaining code quality and testability.
+
+```cpp
+// Define an abstract base class (adapter)
+class TaskManagerBase {
+  // Pure virtual methods define the interface
+};
+
+// Implement a mock class that inherits from the base class
+class TaskManager : public TaskManagerBase {
+  // Use Google Mock for simple methods
+  // Custom implementation for function pointer methods
+  // Delegate to mockable methods without function pointers
+};
+```
+
+This pattern follows these principles:
+1. **Interface Segregation**: Define a clear interface with pure virtual methods
+2. **Adapter Pattern**: Create an abstract base class that adapts the function pointer interface
+3. **Delegation**: Delegate function pointer methods to mockable methods
+4. **Testability**: Maintain testability while working around Google Mock limitations
+
+### 6. State-Based Control Flow
 
 The distillation process is managed through a series of states, with each state having its own control function. This makes the code more modular and easier to maintain.
 
@@ -198,3 +260,40 @@ bool isTemperatureStabilized() {
 ```
 
 This is a critical condition for transitioning from the STABILIZING state to the EARLY_FORESHOTS state.
+
+## Development Tools
+
+### Docker-Based Development Environment
+
+The project uses a Docker container for development tasks, ensuring a consistent environment across different machines:
+
+```mermaid
+graph TD
+    A[pio-tools.sh] --> B[Docker Container]
+    B --> C[PlatformIO CLI]
+    
+    C --> D[clang-format]
+    C --> E[clang-tidy]
+    C --> F[Google Test]
+    C --> G[Compilation Database]
+    
+    D --> H[Code Formatting]
+    E --> I[Static Analysis]
+    F --> J[Unit Testing]
+    G --> K[Static Analysis Tools]
+```
+
+- **Docker Container**: `distiller-tools` provides a consistent development environment
+- **Convenience Script**: `scripts/pio-tools.sh` simplifies running commands in the container:
+  - `./scripts/pio-tools.sh format` for code formatting
+  - `./scripts/pio-tools.sh tidy` for static analysis
+  - `./scripts/pio-tools.sh test` for unit testing
+  - `./scripts/pio-tools.sh all` for running all commands
+
+This approach ensures that all developers work with the same tools and configurations, eliminating "works on my machine" issues and simplifying the setup process.
+
+The Docker container is configured in the `Dockerfile` and includes:
+- PlatformIO CLI
+- Clang tools (clang-format, clang-tidy)
+- Google Test and Google Mock
+- All necessary dependencies

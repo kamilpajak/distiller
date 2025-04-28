@@ -93,6 +93,20 @@ Significant progress has been made in improving code quality by addressing sever
 
 7. **Compilation Database Configured**: Successfully set up the generation and usage of the `compile_commands.json` file, enabling accurate static analysis with clang-tidy.
 
+8. **TaskManagerIO Mock Implementation**: Fixed Google Mock issues with function pointers in TaskManagerIO by implementing an adapter/delegation pattern:
+   - Created an abstract base class (`TaskManagerBase`) with pure virtual methods
+   - Implemented a mock class that inherits from the base class
+   - Used Google Mock for simple methods
+   - Created custom implementations for function pointer methods that delegate to mockable methods
+   - This pattern allows for effective testing while maintaining code quality
+
+9. **Development Workflow Simplification**: Improved development workflow by leveraging Docker container for a consistent environment:
+   - Created `pio-tools.sh` script to run development tools in Docker container
+   - Configured Docker container to handle formatting, static analysis, and testing
+   - Added comprehensive documentation in DEVELOPMENT.md
+   - Updated platformio.ini with necessary configurations for clang-format and clang-tidy
+   - Ensured consistent development experience across different machines
+
 ## Known Issues
 
 No specific issues have been identified yet, as the project is still in its initial state. However, potential areas of concern include:
@@ -103,6 +117,7 @@ No specific issues have been identified yet, as the project is still in its init
 4. **Power Requirements**: The system requires external power for the heaters and relays, which may be a limitation in some environments.
 5. **Error Handling**: The current implementation may not handle all possible error conditions gracefully.
 6. **Remaining Clang-Tidy Warnings**: Some less critical clang-tidy warnings still need to be addressed.
+7. **Testing Framework Compatibility**: While we've resolved the Google Mock issues with function pointers using the adapter/delegation pattern, we should monitor for any other compatibility issues between modern C++23 features and the testing framework.
 
 ## Evolution of Project Decisions
 
@@ -123,5 +138,7 @@ The project has made several key decisions that have shaped its development:
 7. **Test-Driven Development**: The decision to implement unit tests using Google Test and Google Mock enables test-driven development, improving code quality and reliability.
 
 8. **Static Analysis Integration**: The decision to integrate static analysis with clang-tidy and configure a compilation database demonstrates a commitment to code quality and helps identify potential issues early in the development process.
+
+9. **Adapter/Delegation Pattern**: The decision to use the adapter/delegation pattern for mocking function pointers in TaskManagerIO demonstrates a pragmatic approach to testing. By creating an abstract base class and delegating function pointer methods to mockable methods, we've maintained testability while working around Google Mock limitations.
 
 These decisions have contributed to a solid foundation for the project, setting it up for future enhancements and optimizations.

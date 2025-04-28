@@ -82,6 +82,7 @@ src/arduino_secrets.h
 # Generated files
 compile_commands.json
 /include/*
+!/include/TaskManagerIO.h
 /src/mock_arduino.h
 
 # Project documentation

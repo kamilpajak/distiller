@@ -144,6 +144,8 @@ A Python script (`scripts/generate_compile_commands.py`) is used as an extra scr
 - **Google Mock**: A mocking framework for C++
   - Used for mocking dependencies in unit tests
   - Allows testing components in isolation
+  - Has limitations when dealing with function pointers, requiring workarounds
+  - Requires adapter/delegation pattern for mocking function pointers effectively
 
 ### Hardware Dependencies
 - **Power Supply**: The system requires a stable power supply for the microcontroller and relays
@@ -158,6 +160,12 @@ A Python script (`scripts/generate_compile_commands.py`) is used as an extra scr
 - Manages library dependencies
 - Provides a unified development environment
 - Generates the `compile_commands.json` for static analysis tools
+- Runs inside a Docker container for consistent development environment
+- Accessed through a convenience script (`scripts/pio-tools.sh`):
+  - `./scripts/pio-tools.sh format` for code formatting with clang-format
+  - `./scripts/pio-tools.sh tidy` for static analysis with clang-tidy
+  - `./scripts/pio-tools.sh test` for running unit tests
+  - `./scripts/pio-tools.sh all` for running all commands
 
 ### Arduino Framework
 - Provides hardware abstraction
@@ -184,3 +192,10 @@ A Python script (`scripts/generate_compile_commands.py`) is used as an extra scr
 - Used to identify code quality issues and potential bugs
 - Relies on the `compile_commands.json` for accurate analysis
 - Configured with a `.clang-tidy` file to specify checks and options
+
+### Mocking Patterns for Function Pointers
+- Adapter/delegation pattern used to work around Google Mock limitations with function pointers
+- Abstract base class defines the interface with pure virtual methods
+- Mock class inherits from the base class and implements the interface
+- Function pointer methods delegate to mockable methods without function pointers
+- This pattern maintains testability while working with C++23 and modern Google Mock
