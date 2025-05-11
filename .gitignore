@@ -89,3 +89,5 @@ compile_commands.json
 # memory-bank/
 
 # End of https://www.toptal.com/developers/gitignore/api/platformio,c++,visualstudiocode
+
+**/.claude/settings.local.json

@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "distiller-simulator": {
+      "type": "stdio",
+      "command": "node server.js",
+      "args": [],
+      "env": {}
+    }
+  }
+}
