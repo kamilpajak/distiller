@@ -41,17 +41,21 @@ const int LATE_TAILS_VALVE_PIN = 21;
 const int COOLANT_VALVE_PIN = 22;
 const int MAIN_VALVE_PIN = 23;
 
-// LCD constants
+// LCD and SD card constants
 const int LCD_COLUMNS = 20;
 const int LCD_ROWS = 4;
 const int LCD_PIN = 3;
+const int SD_CARD_CS_PIN = 4; // Typical CS pin for SD card on Arduino MKR WiFi 1010
 
 // Array size constants
 const int READINGS_ARRAY_SIZE = 5;
 const int READINGS_ARRAY_MIDDLE_INDEX = 2;
 
 // Time constants
-const unsigned long TEN_MINUTES_MS = 600000;
+// DEFAULT_TASK_RATE_MS is already defined in TaskManagerIO.h
+const unsigned long ONE_MINUTE_MS = 60 * 1000;           // 1 minute
+const unsigned long FIVE_MINUTES_MS = 5 * 60 * 1000;     // 5 minutes
+const unsigned long TEN_MINUTES_MS = 10 * 60 * 1000;     // 10 minutes = 600000ms
 
 // Power constants
 const int HEATER_POWER_LEVEL_1 = 1000;
@@ -79,6 +83,10 @@ const float TEMPERATURE_COMPARISON_TOLERANCE = 0.001F;
 
 // Time conversion constants
 const float MS_TO_MINUTES = 60000.0F;
+
+// Scale operation timeouts (milliseconds)
+const unsigned long SCALE_CONNECTION_TIMEOUT_MS = 1000;  // 1 second timeout for scale connection
+const unsigned long SCALE_READ_TIMEOUT_MS = 500;         // 0.5 second timeout for scale reading
 
 // Test constants
 const float TEST_TOLERANCE = 0.1F;
