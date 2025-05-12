@@ -1,9 +1,8 @@
 #ifndef LOGGER_H
 #define LOGGER_H
 
-#include <Arduino.h>
-#include <SD.h>
 #include <stdarg.h>
+#include "hardware_interfaces.h"
 
 /**
  * Logger class for the Distiller project.
@@ -22,13 +21,17 @@ public:
 
 private:
   static constexpr int MAX_LOG_LINE = 256;
-  static constexpr int CHIP_SELECT_PIN = 4; // SD card CS pin, adjust as needed
+  // SD card CS pin is defined via CHIP_SELECT_PIN macro (usually 4)
 
   LogLevel minLevel = INFO;
   bool sdEnabled = false;
   bool sdAvailable = false;
   File logFile;
   const char* logFileName = "distiller.log";
+  
+  // Hardware interfaces
+  ISerialInterface* serialInterface;
+  ISDInterface* sdInterface;
   
   // Convert log level to string
   const char* levelToString(LogLevel level) {
@@ -45,23 +48,27 @@ private:
 public:
   /**
    * Constructor
-   * @param enableSD Whether to log to SD card
+   * @param serialInterface Interface for serial communication
+   * @param sdInterface Interface for SD card operations (nullptr to disable SD logging)
    */
-  Logger(bool enableSD = false) : sdEnabled(enableSD) {}
+  Logger(ISerialInterface* serialInterface, ISDInterface* sdInterface = nullptr) 
+    : serialInterface(serialInterface), 
+      sdInterface(sdInterface),
+      sdEnabled(sdInterface != nullptr) {}
 
   /**
    * Initialize the logger
    * @param level Minimum log level to record
    */
   void begin(LogLevel level = INFO) {
-    Serial.begin(9600);
+    serialInterface->begin(9600);
     minLevel = level;
     
     // Initialize SD card if enabled
-    if (sdEnabled) {
-      if (SD.begin(CHIP_SELECT_PIN)) {
+    if (sdEnabled && sdInterface) {
+      if (sdInterface->begin(CHIP_SELECT_PIN)) {
         sdAvailable = true;
-        logFile = SD.open(logFileName, FILE_WRITE);
+        logFile = sdInterface->open(logFileName, FILE_WRITE);
         if (logFile) {
           log(INFO, "Logging to SD card started");
         } else {
@@ -96,7 +103,7 @@ public:
              millis(), levelToString(level), message);
 
     // Output to Serial
-    Serial.println(logLine);
+    serialInterface->println(logLine);
     
     // Output to SD card if available
     if (sdEnabled && sdAvailable && logFile) {

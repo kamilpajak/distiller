@@ -1,11 +1,9 @@
 #ifndef SCALE_H
 #define SCALE_H
 
-#ifndef UNIT_TEST
-#include "../include/HX711.h"
-#include "logger.h"
-#endif
 #include "constants.h"
+#include "hardware_interfaces.h"
+#include "logger.h"
 
 #include <algorithm>
 #include <array>
@@ -15,38 +13,24 @@
  */
 class Scale {
 private:
-  HX711 scale;                                       /**< HX711 object for weight measurement. */
+  IScaleInterface* scaleInterface;               /**< Interface for HX711 operations. */
   std::array<float, READINGS_ARRAY_SIZE> readings{}; /**< Array to store weight readings. */
-  int index{0};                                      /**< Index for the current reading. */
-  bool connected{false};                            /**< Whether the scale is connected and responding. */
-  const int dataPin;                                /**< Data pin for HX711. */
-  const int clockPin;                              /**< Clock pin for HX711. */
-
-#ifndef UNIT_TEST
-  Logger* logger = nullptr;                         /**< Logger for recording events. */
-#endif
+  int index{0};                                  /**< Index for the current reading. */
+  bool connected{false};                         /**< Whether the scale is connected and responding. */
+  const int dataPin;                             /**< Data pin for HX711. */
+  const int clockPin;                            /**< Clock pin for HX711. */
+  Logger* logger = nullptr;                      /**< Logger for recording events. */
 
 public:
-#ifdef UNIT_TEST
-  /**
-   * Constructor for the Scale class in test environment.
-   * @param dataPin The data pin for the HX711 module.
-   * @param clockPin The clock pin for the HX711 module.
-   */
-  Scale(int dataPin, int clockPin) : dataPin(dataPin), clockPin(clockPin), connected(true) {
-    for (float &reading : readings) {
-      reading = 0.0F;
-    }
-  }
-#else
   /**
    * Constructor for the Scale class.
+   * @param scaleInterface Interface for HX711 operations.
    * @param dataPin The data pin for the HX711 module.
    * @param clockPin The clock pin for the HX711 module.
    * @param logger Pointer to the logger instance (optional).
    */
-  Scale(int dataPin, int clockPin, Logger* logger = nullptr)
-      : dataPin(dataPin), clockPin(clockPin), logger(logger) {
+  Scale(IScaleInterface* scaleInterface, int dataPin, int clockPin, Logger* logger = nullptr)
+      : scaleInterface(scaleInterface), dataPin(dataPin), clockPin(clockPin), logger(logger) {
 
     if (logger) {
       logger->info("Initializing scale on pins %d, %d", dataPin, clockPin);
@@ -59,11 +43,11 @@ public:
 
     // Try to connect with timeout
     unsigned long startTime = millis();
-    scale.begin(dataPin, clockPin);
+    scaleInterface->begin();
 
     // Check if scale responds within timeout
     connected = false;
-    while (!scale.is_ready()) {
+    while (!scaleInterface->is_ready()) {
       if (millis() - startTime > SCALE_CONNECTION_TIMEOUT_MS) {
         if (logger) {
           logger->error("Scale connection timeout on pins %d, %d", dataPin, clockPin);
@@ -80,19 +64,17 @@ public:
     }
 
     // Tare the scale
-    scale.tare();
+    scaleInterface->tare();
     if (logger) {
       logger->info("Scale tared on pins %d, %d", dataPin, clockPin);
     }
   }
-#endif
 
   /**
    * Updates the weight reading.
    * @return True if weight was successfully updated, false otherwise.
    */
   bool updateWeight() {
-#ifndef UNIT_TEST
     // Skip if not connected
     if (!connected) {
       if (logger) {
@@ -103,7 +85,7 @@ public:
 
     // Wait for scale with timeout
     unsigned long startTime = millis();
-    while (!scale.is_ready()) {
+    while (!scaleInterface->is_ready()) {
       if (millis() - startTime > SCALE_READ_TIMEOUT_MS) {
         if (logger) {
           logger->error("Timeout waiting for scale data on pins %d, %d", dataPin, clockPin);
@@ -115,7 +97,7 @@ public:
     }
 
     // Read weight
-    float value = scale.get_units();
+    float value = scaleInterface->get_units();
     readings[index] = value;
     index = (index + 1) % READINGS_ARRAY_SIZE;
 
@@ -123,12 +105,6 @@ public:
       logger->debug("Scale reading: %.2f on pins %d, %d", value, dataPin, clockPin);
     }
     return true;
-#else
-    // Test environment - just update
-    readings[index] = scale.get_units();
-    index = (index + 1) % READINGS_ARRAY_SIZE;
-    return true;
-#endif
   }
 
   /**
@@ -165,7 +141,6 @@ public:
    * @return True if successfully reconnected, false otherwise.
    */
   bool tryReconnect() {
-#ifndef UNIT_TEST
     if (connected) return true; // Already connected
 
     if (logger) {
@@ -174,10 +149,10 @@ public:
 
     // Try to connect with timeout
     unsigned long startTime = millis();
-    scale.begin(dataPin, clockPin);
+    scaleInterface->begin();
 
     // Check if scale responds within timeout
-    while (!scale.is_ready()) {
+    while (!scaleInterface->is_ready()) {
       if (millis() - startTime > SCALE_CONNECTION_TIMEOUT_MS) {
         if (logger) {
           logger->error("Scale reconnection timeout on pins %d, %d", dataPin, clockPin);
@@ -189,15 +164,12 @@ public:
 
     // Scale is connected
     connected = true;
-    scale.tare();
+    scaleInterface->tare();
 
     if (logger) {
       logger->info("Scale reconnected successfully on pins %d, %d", dataPin, clockPin);
     }
     return true;
-#else
-    return true;
-#endif
   }
 };
 

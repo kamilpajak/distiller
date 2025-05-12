@@ -5,6 +5,8 @@
 #include "display_controller.h"
 #include "distillation_state_manager.h"
 #include "flow_controller.h"
+#include "hardware_factory.h"
+#include "hardware_interfaces.h"
 #include "heater_controller.h"
 #include "lcd.h"
 #include "logger.h"
@@ -12,8 +14,12 @@
 #include "thermometer_controller.h"
 #include "valve_controller.h"
 
-// Create the logger (enable SD card logging if needed)
-Logger logger(true); // true = log to SD card
+// Create hardware interfaces
+ISerialInterface* serialInterface = HardwareFactory::getSerialInterface();
+ISDInterface* sdInterface = HardwareFactory::getSDInterface();
+
+// Create the logger with interfaces
+Logger logger(serialInterface, sdInterface);
 
 // Task IDs for system health and reconnection
 taskid_t reconnectScalesTaskId;
@@ -26,12 +32,24 @@ Thermometer nearTopThermometer(NEAR_TOP_THERMOMETER_PIN);
 Thermometer topThermometer(TOP_THERMOMETER_PIN);
 
 // Creating objects for scales with logger
-Scale earlyForeshotsScale(EARLY_FORESHOTS_SCALE_DATA_PIN, EARLY_FORESHOTS_SCALE_CLOCK_PIN, &logger);
-Scale lateForeshotsScale(LATE_FORESHOTS_SCALE_DATA_PIN, LATE_FORESHOTS_SCALE_CLOCK_PIN, &logger);
-Scale headsScale(HEADS_SCALE_DATA_PIN, HEADS_SCALE_CLOCK_PIN, &logger);
-Scale heartsScale(HEARTS_SCALE_DATA_PIN, HEARTS_SCALE_CLOCK_PIN, &logger);
-Scale earlyTailsScale(EARLY_TAILS_SCALE_DATA_PIN, EARLY_TAILS_SCALE_CLOCK_PIN, &logger);
-Scale lateTailsScale(LATE_TAILS_SCALE_DATA_PIN, LATE_TAILS_SCALE_CLOCK_PIN, &logger);
+Scale earlyForeshotsScale(
+    HardwareFactory::createScaleInterface(EARLY_FORESHOTS_SCALE_DATA_PIN, EARLY_FORESHOTS_SCALE_CLOCK_PIN),
+    EARLY_FORESHOTS_SCALE_DATA_PIN, EARLY_FORESHOTS_SCALE_CLOCK_PIN, &logger);
+Scale lateForeshotsScale(
+    HardwareFactory::createScaleInterface(LATE_FORESHOTS_SCALE_DATA_PIN, LATE_FORESHOTS_SCALE_CLOCK_PIN),
+    LATE_FORESHOTS_SCALE_DATA_PIN, LATE_FORESHOTS_SCALE_CLOCK_PIN, &logger);
+Scale headsScale(
+    HardwareFactory::createScaleInterface(HEADS_SCALE_DATA_PIN, HEADS_SCALE_CLOCK_PIN),
+    HEADS_SCALE_DATA_PIN, HEADS_SCALE_CLOCK_PIN, &logger);
+Scale heartsScale(
+    HardwareFactory::createScaleInterface(HEARTS_SCALE_DATA_PIN, HEARTS_SCALE_CLOCK_PIN),
+    HEARTS_SCALE_DATA_PIN, HEARTS_SCALE_CLOCK_PIN, &logger);
+Scale earlyTailsScale(
+    HardwareFactory::createScaleInterface(EARLY_TAILS_SCALE_DATA_PIN, EARLY_TAILS_SCALE_CLOCK_PIN),
+    EARLY_TAILS_SCALE_DATA_PIN, EARLY_TAILS_SCALE_CLOCK_PIN, &logger);
+Scale lateTailsScale(
+    HardwareFactory::createScaleInterface(LATE_TAILS_SCALE_DATA_PIN, LATE_TAILS_SCALE_CLOCK_PIN),
+    LATE_TAILS_SCALE_DATA_PIN, LATE_TAILS_SCALE_CLOCK_PIN, &logger);
 
 // Creating objects for heater relays
 Relay heaterRelay1(HEATER_RELAY_1_PIN);
