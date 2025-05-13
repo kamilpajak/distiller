@@ -1,0 +1,37 @@
+# Version control
+.git
+.gitignore
+.github
+
+# Build artifacts
+.pio
+build
+bw-output
+sonar-reports
+test-reports
+
+# Development environment files
+.vscode
+*.code-workspace
+.clangd
+.cache
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*~
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Documentation
+*.md
+
+# Docker files (no need to include these in the build context)
+Dockerfile*
+.dockerignore
+
+# Logs
+*.log

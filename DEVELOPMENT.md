@@ -33,6 +33,9 @@ A convenience script `scripts/pio-tools.sh` is provided to make it easier to run
 # Run unit tests
 ./scripts/pio-tools.sh test
 
+# Build a specific environment
+./scripts/pio-tools.sh build prod
+
 # Run all commands (format, tidy, test)
 ./scripts/pio-tools.sh all
 
@@ -45,6 +48,20 @@ This script:
 2. Builds the Docker image if it doesn't exist
 3. Runs the Docker container with the specified command
 4. Mounts the current directory to `/project` in the container
+5. Uses smart detection to prevent Docker process hanging
+
+##### Docker Process Management
+
+The `pio-tools.sh` script includes special handling to prevent Docker processes from hanging in macOS terminals (a common issue). It employs several techniques:
+
+- Runs containers in detached mode with proper process management
+- Uses unique container names for reliable tracking and cleanup
+- Monitors process completion through log scanning
+- Implements automatic timeouts to prevent indefinite hanging
+- Provides detailed progress feedback during long-running operations
+- Ensures proper cleanup of all resources
+
+When running tests, the script will detect completion by looking for a marker in the output, allowing it to terminate the Docker process automatically without waiting for the full timeout.
 
 Under the hood, the Docker container uses PlatformIO CLI commands to perform these tasks:
 - Code formatting uses `clang-format` with the configuration in `.clang-format`
