@@ -51,3 +51,11 @@ coverage.info
 
 # Logs
 *.log
+
+# Specific project files to ignore
+.claude/
+*.bak
+
+# Legacy directories and files from old structure
+/include/
+/src/mock_arduino.h
