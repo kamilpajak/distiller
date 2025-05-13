@@ -1,0 +1,8 @@
+{
+  "name": "HardwareAbstractions",
+  "version": "1.0.0",
+  "description": "Hardware abstraction layer for the Distiller project",
+  "keywords": "arduino, hardware, abstractions, interfaces",
+  "frameworks": "arduino",
+  "platforms": ["atmelavr", "atmelsam", "native"]
+}

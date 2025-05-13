@@ -1,5 +1,6 @@
-#include "../src/constants.h"
 #include "test_constants.h"
+
+#include <constants.h>
 
 // Define constants for array sizes
 namespace {

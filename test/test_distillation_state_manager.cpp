@@ -1,6 +1,6 @@
-#include "../src/constants.h"
 #include "test_constants.h"
 
+#include <constants.h>
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include <memory>
@@ -14,7 +14,7 @@
 #include "mock_arduino.h"
 
 // Include the distillation_state_manager.h file
-#include "../src/distillation_state_manager.h"
+#include <distillation_state_manager.h>
 
 class DistillationStateManagerTest
   : public ::testing::Test { // NOLINT(cppcoreguidelines-non-private-member-variables-in-classes)

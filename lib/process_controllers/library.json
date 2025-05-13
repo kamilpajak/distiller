@@ -1,0 +1,12 @@
+{
+  "name": "ProcessControllers",
+  "version": "1.0.0",
+  "description": "Process controller components for the Distiller project",
+  "keywords": "arduino, controllers, process",
+  "frameworks": "arduino",
+  "platforms": ["atmelavr", "atmelsam", "native"],
+  "dependencies": {
+    "HardwareAbstractions": "*",
+    "Utilities": "*"
+  }
+}

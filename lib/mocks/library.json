@@ -1,0 +1,16 @@
+{
+  "name": "mocks",
+  "version": "1.0.0",
+  "description": "Mock implementations for Arduino dependencies in testing and native environments",
+  "keywords": "mocks, testing, arduino",
+  "authors": [
+    {
+      "name": "Distiller Team",
+      "email": "distiller@example.com"
+    }
+  ],
+  "license": "MIT",
+  "dependencies": {},
+  "frameworks": "*",
+  "platforms": "*"
+}

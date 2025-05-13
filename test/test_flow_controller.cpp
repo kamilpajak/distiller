@@ -1,6 +1,6 @@
-#include "../src/constants.h"
 #include "test_constants.h"
 
+#include <constants.h>
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include <memory>
@@ -11,7 +11,7 @@
 #endif
 
 // Include the distillation_state_manager.h file to get the DistillationState enum
-#include "../src/distillation_state_manager.h"
+#include <distillation_state_manager.h>
 
 // Conditional includes based on test vs. production environment
 #ifdef UNIT_TEST

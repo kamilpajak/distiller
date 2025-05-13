@@ -1,22 +1,44 @@
-#ifndef UNIT_TEST
-#include "../include/Arduino.h"
-#include "../include/TaskManagerIO.h"
-#include "constants.h"
-#include "display_controller.h"
-#include "distillation_state_manager.h"
-#include "flow_controller.h"
-#include "hardware_factory.h"
-#include "hardware_interfaces.h"
-#include "heater_controller.h"
-#include "lcd.h"
-#include "logger.h"
-#include "scale_controller.h"
-#include "thermometer_controller.h"
-#include "valve_controller.h"
+#if defined(NATIVE) || defined(UNIT_TEST)
+// For native build and unit tests, use our mock implementation
+#include <MockArduino.h>
+#include <TaskManagerIO.h>
+// Include headers needed for tests and native builds
+#include <hardware_interfaces.h>
+#else
+// The real Arduino.h will be included by the build system
+// Explicitly skip including our Arduino.h in include/ directory
+#define ARDUINO_H
+#include <Arduino.h>
+#include <SPI.h>        // SPI must come before SD
+#include <SD.h>         // SD must come after SPI
+#include <TaskManagerIO.h>
+#include <HX711.h>
+
+// Now include our hardware interfaces after all Arduino libs are included
+// Include library headers from the library structure
+#include <lcd.h>
+#include <relay.h>
+#include <scale.h>
+#include <thermometer.h>
+
+// Process controllers
+#include <display_controller.h>
+#include <flow_controller.h>
+#include <heater_controller.h>
+#include <scale_controller.h>
+#include <thermometer_controller.h>
+#include <valve_controller.h>
+
+// Utilities
+#include <PID_v1.h>
+#include <constants.h>
+#include <distillation_state_manager.h>
+#include <hardware_factory.h>
+#include <logger.h>
 
 // Create hardware interfaces
-ISerialInterface* serialInterface = HardwareFactory::getSerialInterface();
-ISDInterface* sdInterface = HardwareFactory::getSDInterface();
+ISerialInterface *serialInterface = HardwareFactory::getSerialInterface();
+ISDInterface *sdInterface = HardwareFactory::getSDInterface();
 
 // Create the logger with interfaces
 Logger logger(serialInterface, sdInterface);
@@ -32,24 +54,20 @@ Thermometer nearTopThermometer(NEAR_TOP_THERMOMETER_PIN);
 Thermometer topThermometer(TOP_THERMOMETER_PIN);
 
 // Creating objects for scales with logger
-Scale earlyForeshotsScale(
-    HardwareFactory::createScaleInterface(EARLY_FORESHOTS_SCALE_DATA_PIN, EARLY_FORESHOTS_SCALE_CLOCK_PIN),
-    EARLY_FORESHOTS_SCALE_DATA_PIN, EARLY_FORESHOTS_SCALE_CLOCK_PIN, &logger);
-Scale lateForeshotsScale(
-    HardwareFactory::createScaleInterface(LATE_FORESHOTS_SCALE_DATA_PIN, LATE_FORESHOTS_SCALE_CLOCK_PIN),
-    LATE_FORESHOTS_SCALE_DATA_PIN, LATE_FORESHOTS_SCALE_CLOCK_PIN, &logger);
-Scale headsScale(
-    HardwareFactory::createScaleInterface(HEADS_SCALE_DATA_PIN, HEADS_SCALE_CLOCK_PIN),
-    HEADS_SCALE_DATA_PIN, HEADS_SCALE_CLOCK_PIN, &logger);
-Scale heartsScale(
-    HardwareFactory::createScaleInterface(HEARTS_SCALE_DATA_PIN, HEARTS_SCALE_CLOCK_PIN),
-    HEARTS_SCALE_DATA_PIN, HEARTS_SCALE_CLOCK_PIN, &logger);
-Scale earlyTailsScale(
-    HardwareFactory::createScaleInterface(EARLY_TAILS_SCALE_DATA_PIN, EARLY_TAILS_SCALE_CLOCK_PIN),
-    EARLY_TAILS_SCALE_DATA_PIN, EARLY_TAILS_SCALE_CLOCK_PIN, &logger);
-Scale lateTailsScale(
-    HardwareFactory::createScaleInterface(LATE_TAILS_SCALE_DATA_PIN, LATE_TAILS_SCALE_CLOCK_PIN),
-    LATE_TAILS_SCALE_DATA_PIN, LATE_TAILS_SCALE_CLOCK_PIN, &logger);
+Scale earlyForeshotsScale(HardwareFactory::createScaleInterface(EARLY_FORESHOTS_SCALE_DATA_PIN,
+                                                                EARLY_FORESHOTS_SCALE_CLOCK_PIN),
+                          EARLY_FORESHOTS_SCALE_DATA_PIN, EARLY_FORESHOTS_SCALE_CLOCK_PIN, &logger);
+Scale lateForeshotsScale(HardwareFactory::createScaleInterface(LATE_FORESHOTS_SCALE_DATA_PIN,
+                                                               LATE_FORESHOTS_SCALE_CLOCK_PIN),
+                         LATE_FORESHOTS_SCALE_DATA_PIN, LATE_FORESHOTS_SCALE_CLOCK_PIN, &logger);
+Scale headsScale(HardwareFactory::createScaleInterface(HEADS_SCALE_DATA_PIN, HEADS_SCALE_CLOCK_PIN),
+                 HEADS_SCALE_DATA_PIN, HEADS_SCALE_CLOCK_PIN, &logger);
+Scale heartsScale(HardwareFactory::createScaleInterface(HEARTS_SCALE_DATA_PIN, HEARTS_SCALE_CLOCK_PIN),
+                  HEARTS_SCALE_DATA_PIN, HEARTS_SCALE_CLOCK_PIN, &logger);
+Scale earlyTailsScale(HardwareFactory::createScaleInterface(EARLY_TAILS_SCALE_DATA_PIN, EARLY_TAILS_SCALE_CLOCK_PIN),
+                      EARLY_TAILS_SCALE_DATA_PIN, EARLY_TAILS_SCALE_CLOCK_PIN, &logger);
+Scale lateTailsScale(HardwareFactory::createScaleInterface(LATE_TAILS_SCALE_DATA_PIN, LATE_TAILS_SCALE_CLOCK_PIN),
+                     LATE_TAILS_SCALE_DATA_PIN, LATE_TAILS_SCALE_CLOCK_PIN, &logger);
 
 // Creating objects for heater relays
 Relay heaterRelay1(HEATER_RELAY_1_PIN);
@@ -72,10 +90,10 @@ Lcd lcd(LCD_COLUMNS, LCD_ROWS, LCD_PIN);
 // Creating controllers with logger
 HeaterController heaterController(heaterRelay1, heaterRelay2, heaterRelay3);
 ValveController valveController(valveRelay1, valveRelay2, valveRelay3, valveRelay4, valveRelay5, valveRelay6,
-                               valveRelay7, valveRelay8);
+                                valveRelay7, valveRelay8);
 ThermometerController thermometerController(mashTunThermometer, bottomThermometer, nearTopThermometer, topThermometer);
 ScaleController scaleController(earlyForeshotsScale, lateForeshotsScale, headsScale, heartsScale, earlyTailsScale,
-                               lateTailsScale, &logger);
+                                lateTailsScale, &logger);
 FlowController flowController(&valveController, &scaleController);
 DisplayController displayController(lcd, thermometerController, scaleController, flowController);
 
@@ -97,9 +115,7 @@ void updateAllThermometers() {
 }
 
 // Update all scales with error handling
-void updateAllScales() {
-  scaleController.updateAllWeights();
-}
+void updateAllScales() { scaleController.updateAllWeights(); }
 
 // Check if the target volume is reached
 bool hasReachedVolume(float distillateVolume) {
@@ -114,8 +130,8 @@ bool hasReachedVolume(float distillateVolume) {
   double weight = scaleController.getWeight(currentState);
   double volume = weight / ALCOHOL_DENSITY;
 
-  logger.debug("Current volume for state %d: %.2f mL (target: %.2f mL)",
-               static_cast<int>(currentState), volume, distillateVolume);
+  logger.debug("Current volume for state %d: %.2f mL (target: %.2f mL)", static_cast<int>(currentState), volume,
+               distillateVolume);
 
   return volume >= distillateVolume;
 }
@@ -126,8 +142,7 @@ bool isTemperatureStabilized() {
   float topTemp = topThermometer.getTemperature();
   float diff = bottomTemp - topTemp;
 
-  logger.debug("Temperature difference between bottom (%.2f°C) and top (%.2f°C): %.2f°C",
-               bottomTemp, topTemp, diff);
+  logger.debug("Temperature difference between bottom (%.2f°C) and top (%.2f°C): %.2f°C", bottomTemp, topTemp, diff);
 
   return diff < TEMPERATURE_STABILIZATION_THRESHOLD_C;
 }
@@ -164,19 +179,17 @@ void tryReconnectScales() {
 void checkSystemHealth() {
   // Log current state
   DistillationState currentState = DistillationStateManager::getInstance().getState();
-  logger.info("System health check - Current state: %d, Connected scales: %d/6",
-              static_cast<int>(currentState), scaleController.getConnectedScaleCount());
+  logger.info("System health check - Current state: %d, Connected scales: %d/6", static_cast<int>(currentState),
+              scaleController.getConnectedScaleCount());
 
   // Log temperatures
   logger.info("Temperatures - Mash: %.2f°C, Bottom: %.2f°C, Near Top: %.2f°C, Top: %.2f°C",
-              thermometerController.getMashTunTemperature(),
-              thermometerController.getBottomTemperature(),
-              thermometerController.getNearTopTemperature(),
-              thermometerController.getTopTemperature());
+              thermometerController.getMashTunTemperature(), thermometerController.getBottomTemperature(),
+              thermometerController.getNearTopTemperature(), thermometerController.getTopTemperature());
 
   // Log current flow rate if applicable
   if (currentState >= EARLY_FORESHOTS && currentState <= LATE_TAILS) {
-    logger.info("Flow rate: %.2f mL/min", flowController.getTargetFlowRate());
+    logger.info("Flow rate: %.2f mL/min", flowController.getFlowRate());
   }
 }
 

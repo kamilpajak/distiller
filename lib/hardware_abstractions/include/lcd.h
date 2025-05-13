@@ -2,10 +2,10 @@
 #define LCD_H
 
 #ifndef UNIT_TEST
-#include "../include/Arduino.h"
-#include "../include/Wire.h"
-#include "../include/hd44780.h"
-#include "../include/hd44780ioClass/hd44780_I2Cexp.h"
+#include <Arduino.h>
+#include <Wire.h>
+#include <hd44780.h>
+#include <hd44780ioClass/hd44780_I2Cexp.h>
 #endif
 
 #include <cstdint>

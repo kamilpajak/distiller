@@ -10,7 +10,7 @@
 #include "mock_arduino.h"
 
 // Include the Relay class
-#include "../src/relay.h"
+#include <relay.h>
 
 #ifdef UNIT_TEST
 // Undefine Arduino functions to avoid conflicts with other tests

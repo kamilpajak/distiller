@@ -1,6 +1,6 @@
-#include "../src/constants.h"
 #include "test_constants.h"
 
+#include <constants.h>
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include <memory>
@@ -11,7 +11,7 @@
 #endif
 
 // Include the Thermometer class (now with conditional compilation)
-#include "../src/thermometer.h"
+#include <thermometer.h>
 
 class ThermometerTest : public ::testing::Test { // NOLINT(cppcoreguidelines-non-private-member-variables-in-classes)
 protected:

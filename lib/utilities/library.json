@@ -1,0 +1,11 @@
+{
+  "name": "Utilities",
+  "version": "1.0.0",
+  "description": "Utility components and helpers for the Distiller project",
+  "keywords": "arduino, utilities, helpers",
+  "frameworks": "arduino",
+  "platforms": ["atmelavr", "atmelsam", "native"],
+  "dependencies": {
+    "HardwareAbstractions": "*"
+  }
+}

@@ -32,10 +32,33 @@ public:
   MOCK_METHOD(float, getTempCByIndex, (uint8_t), ());
 };
 
+#elif defined(UNIT_TEST)
+// For unit tests, we'll use the mocks defined above
+#elif defined(NATIVE)
+// For native builds, we'll provide a minimal implementation
+class OneWire {
+public:
+  OneWire(int pin) {}
+  void begin() {}
+  uint8_t reset() { return 1; }
+  void select(const uint8_t* addr) {}
+  void write(uint8_t v) {}
+  void write_bytes(const uint8_t* buf, uint16_t count) {}
+  uint8_t read() { return 0; }
+  void read_bytes(uint8_t* buf, uint16_t count) {}
+};
+
+class DallasTemperature {
+public:
+  DallasTemperature(OneWire* wire) {}
+  void begin() {}
+  void requestTemperatures() {}
+  float getTempCByIndex(uint8_t index) { return 20.0f; }
+};
 #else
-// Use quotes for regular builds, which will look in the project include paths first
-#include "DallasTemperature/DallasTemperature.h"
-#include "OneWire/OneWire.h"
+// Use angle brackets for library includes - for production build
+#include <DallasTemperature.h>
+#include <OneWire.h>
 #endif
 
 /**

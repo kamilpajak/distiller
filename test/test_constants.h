@@ -1,7 +1,7 @@
 #ifndef TEST_CONSTANTS_H
 #define TEST_CONSTANTS_H
 
-#include "../src/constants.h"
+#include <constants.h>
 
 // Flow rate constants for tests
 namespace flow {

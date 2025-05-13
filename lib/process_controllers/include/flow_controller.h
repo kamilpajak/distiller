@@ -1,12 +1,12 @@
 #ifndef FLOW_CONTROLLER_H
 #define FLOW_CONTROLLER_H
 
-#include "../include/PID_v1.h"
-#include "constants.h"
-#include "scale_controller.h"
-#include "valve_controller.h"
-
+#include <PID_v1.h>
 #include <cmath> // For std::abs
+#include <constants.h>
+#include <distillation_state_manager.h>
+#include <scale_controller.h>
+#include <valve_controller.h>
 
 /**
  * Class for handling flow control.

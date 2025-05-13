@@ -1,8 +1,8 @@
-#include "../src/constants.h"
 #include "test_constants.h"
 
-#include <gtest/gtest.h>
+#include <constants.h>
 #include <gmock/gmock.h>
+#include <gtest/gtest.h>
 #include <memory>
 #include <string>
 #include <vector>
@@ -12,30 +12,27 @@
 #define UNIT_TEST
 #endif
 
-#include "../src/hardware_interfaces.h"
-#include "../src/logger.h"
 #include "test_mocks.h"
+
+#include <hardware_interfaces.h>
+#include <logger.h>
 
 // Mock implementation for File
 class MockFile {
 public:
-  bool println(const char* message) {
+  bool println(const char *message) {
     MockSDInterface::writtenLogs.push_back(std::string(message));
     return true;
   }
 
-  bool print(const char* /*message*/) {
+  bool print(const char * /*message*/) {
     // Not used in our tests
     return true;
   }
 
-  bool flush() {
-    return true;
-  }
+  bool flush() { return true; }
 
-  operator bool() const {
-    return MockSDInterface::beginResult;
-  }
+  operator bool() const { return MockSDInterface::beginResult; }
 };
 
 // FILE_WRITE is already defined in hardware_interfaces.h
@@ -50,7 +47,7 @@ protected:
   void SetUp() override {
     MockSerialInterface::reset();
     MockSDInterface::reset();
-    
+
     serialInterface = std::make_unique<MockSerialInterface>();
     sdInterface = std::make_unique<MockSDInterface>();
   }
@@ -73,10 +70,10 @@ TEST_F(LoggerTest, Constructor) {
   // Serial-only logger
   logger = std::make_unique<Logger>(serialInterface.get(), nullptr);
   EXPECT_FALSE(MockSDInterface::beginCalled);
-  
+
   // Serial and SD card logger
   logger = std::make_unique<Logger>(serialInterface.get(), sdInterface.get());
-  EXPECT_FALSE(MockSDInterface::beginCalled);  // begin() is called in begin(), not constructor
+  EXPECT_FALSE(MockSDInterface::beginCalled); // begin() is called in begin(), not constructor
 }
 
 /**
@@ -90,34 +87,34 @@ TEST_F(LoggerTest, Initialization) {
   // Serial only logger
   logger = std::make_unique<Logger>(serialInterface.get(), nullptr);
   logger->begin(Logger::INFO);
-  
+
   EXPECT_TRUE(MockSerialInterface::initialized);
   EXPECT_EQ(9600UL, MockSerialInterface::baudRate);
   EXPECT_FALSE(MockSDInterface::beginCalled);
-  
+
   // Reset mocks
   MockSerialInterface::reset();
-  
+
   // Serial and SD card logger - successful SD init
   logger = std::make_unique<Logger>(serialInterface.get(), sdInterface.get());
   MockSDInterface::beginResult = true;
   logger->begin(Logger::INFO);
-  
+
   EXPECT_TRUE(MockSerialInterface::initialized);
   EXPECT_TRUE(MockSDInterface::beginCalled);
   EXPECT_EQ(CHIP_SELECT_PIN, MockSDInterface::beginPin);
   EXPECT_FALSE(MockSDInterface::openedFiles.empty());
   EXPECT_EQ("distiller.log", MockSDInterface::openedFiles[0]);
-  
+
   // Reset mocks
   MockSerialInterface::reset();
   MockSDInterface::reset();
-  
+
   // Serial and SD card logger - failed SD init
   logger = std::make_unique<Logger>(serialInterface.get(), sdInterface.get());
   MockSDInterface::beginResult = false;
   logger->begin(Logger::INFO);
-  
+
   EXPECT_TRUE(MockSerialInterface::initialized);
   EXPECT_TRUE(MockSDInterface::beginCalled);
   EXPECT_TRUE(containsSubstring(MockSerialInterface::logs, "SD card initialization failed"));
@@ -133,16 +130,16 @@ TEST_F(LoggerTest, Initialization) {
 TEST_F(LoggerTest, LevelFiltering) {
   logger = std::make_unique<Logger>(serialInterface.get(), nullptr);
   logger->begin(Logger::WARNING);
-  
+
   // These should not be logged (below WARNING)
   logger->debug("Debug message");
   logger->info("Info message");
-  
+
   // These should be logged (WARNING or above)
   logger->warning("Warning message");
   logger->error("Error message");
   logger->critical("Critical message");
-  
+
   ASSERT_EQ(3, MockSerialInterface::logs.size());
   EXPECT_TRUE(containsSubstring(MockSerialInterface::logs, "WARNING"));
   EXPECT_TRUE(containsSubstring(MockSerialInterface::logs, "ERROR"));
@@ -161,12 +158,12 @@ TEST_F(LoggerTest, LevelFiltering) {
 TEST_F(LoggerTest, MessageFormatting) {
   logger = std::make_unique<Logger>(serialInterface.get(), nullptr);
   logger->begin(Logger::INFO);
-  
+
   logger->info("Integer: %d", 42);
   logger->info("Float: %.2f", 3.14159);
   logger->info("String: %s", "hello");
   logger->info("Multiple: %d %.1f %s", 99, 1.5, "test");
-  
+
   ASSERT_EQ(4, MockSerialInterface::logs.size());
   EXPECT_TRUE(containsSubstring(MockSerialInterface::logs, "Integer: 42"));
   EXPECT_TRUE(containsSubstring(MockSerialInterface::logs, "Float: 3.14"));
@@ -192,14 +189,14 @@ TEST_F(LoggerTest, MessageFormatting) {
  */
 TEST_F(LoggerTest, ConvenienceMethods) {
   logger = std::make_unique<Logger>(serialInterface.get(), nullptr);
-  logger->begin(Logger::DEBUG);
-  
+  logger->begin(Logger::DEBUG_LEVEL);
+
   logger->debug("Debug message");
   logger->info("Info message");
   logger->warning("Warning message");
   logger->error("Error message");
   logger->critical("Critical message");
-  
+
   ASSERT_EQ(5, MockSerialInterface::logs.size());
   EXPECT_TRUE(containsSubstring(MockSerialInterface::logs, "[DEBUG] Debug message"));
   EXPECT_TRUE(containsSubstring(MockSerialInterface::logs, "[INFO] Info message"));
@@ -218,8 +215,8 @@ TEST_F(LoggerTest, ConvenienceMethods) {
 TEST_F(LoggerTest, IsLevelEnabled) {
   logger = std::make_unique<Logger>(serialInterface.get(), nullptr);
   logger->begin(Logger::WARNING);
-  
-  EXPECT_FALSE(logger->isLevelEnabled(Logger::DEBUG));
+
+  EXPECT_FALSE(logger->isLevelEnabled(Logger::DEBUG_LEVEL));
   EXPECT_FALSE(logger->isLevelEnabled(Logger::INFO));
   EXPECT_TRUE(logger->isLevelEnabled(Logger::WARNING));
   EXPECT_TRUE(logger->isLevelEnabled(Logger::ERROR));

@@ -21,4 +21,14 @@ void setMillis(unsigned long newMillis) { ArduinoMock::setMillis(newMillis); }
 // Function to advance mock time (for simulating time passing)
 void advanceMillis(unsigned long millisToAdvance) { ArduinoMock::advanceMillis(millisToAdvance); }
 
+// Define the SD instance
+#ifndef SDClass_defined
+// Note: Since SDClass is already defined in hardware_interfaces.h, we don't define it here
+#endif
+
+// Define the SD instance
+#ifdef SDClass_defined
+SDClass SD;
+#endif
+
 #endif // UNIT_TEST

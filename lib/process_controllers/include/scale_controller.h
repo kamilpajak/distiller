@@ -1,12 +1,9 @@
 #ifndef SCALE_CONTROLLER_H
 #define SCALE_CONTROLLER_H
 
-#include "distillation_state_manager.h"
-#include "scale.h"
-
-#ifndef UNIT_TEST
-#include "logger.h"
-#endif
+#include <distillation_state_manager.h>
+#include <logger.h>
+#include <scale.h>
 
 /**
  * Class for managing scales.
@@ -20,25 +17,28 @@ private:
   Scale &earlyTailsScale;     /**< Scale for weighing the early tails. */
   Scale &lateTailsScale;      /**< Scale for weighing the late tails. */
 
-#ifndef UNIT_TEST
-  Logger* logger = nullptr;   /**< Logger for recording events. */
+#if !defined(UNIT_TEST) && !defined(NATIVE)
+  Logger *logger = nullptr; /**< Logger for recording events. */
+#else
+  Logger *logger = nullptr; /**< Logger for recording events (null in test/native). */
 #endif
 
 public:
-#ifdef UNIT_TEST
+#if defined(UNIT_TEST) || defined(NATIVE)
   /**
-   * Constructor for the ScaleController class in test environment.
+   * Constructor for the ScaleController class in test/native environment.
    * @param earlyForeshotsScale Scale for weighing the early foreshots.
    * @param lateForeshotsScale Scale for weighing the late foreshots.
    * @param headsScale Scale for weighing the heads.
    * @param heartsScale Scale for weighing the hearts.
    * @param earlyTailsScale Scale for weighing the early tails.
    * @param lateTailsScale Scale for weighing the late tails.
+   * @param logger Pointer to the logger instance (optional).
    */
   ScaleController(Scale &earlyForeshotsScale, Scale &lateForeshotsScale, Scale &headsScale, Scale &heartsScale,
-                  Scale &earlyTailsScale, Scale &lateTailsScale)
+                  Scale &earlyTailsScale, Scale &lateTailsScale, Logger *logger = nullptr)
     : earlyForeshotsScale(earlyForeshotsScale), lateForeshotsScale(lateForeshotsScale), headsScale(headsScale),
-      heartsScale(heartsScale), earlyTailsScale(earlyTailsScale), lateTailsScale(lateTailsScale) {}
+      heartsScale(heartsScale), earlyTailsScale(earlyTailsScale), lateTailsScale(lateTailsScale), logger(logger) {}
 #else
   /**
    * Constructor for the ScaleController class.
@@ -51,7 +51,7 @@ public:
    * @param logger Pointer to the logger instance (optional).
    */
   ScaleController(Scale &earlyForeshotsScale, Scale &lateForeshotsScale, Scale &headsScale, Scale &heartsScale,
-                  Scale &earlyTailsScale, Scale &lateTailsScale, Logger* logger = nullptr)
+                  Scale &earlyTailsScale, Scale &lateTailsScale, Logger *logger = nullptr)
     : earlyForeshotsScale(earlyForeshotsScale), lateForeshotsScale(lateForeshotsScale), headsScale(headsScale),
       heartsScale(heartsScale), earlyTailsScale(earlyTailsScale), lateTailsScale(lateTailsScale), logger(logger) {
 
@@ -73,7 +73,7 @@ public:
    * Updates all the scales' weights.
    */
   void updateAllWeights() {
-#ifndef UNIT_TEST
+#if !defined(UNIT_TEST) && !defined(NATIVE)
     if (logger) {
       logger->debug("Updating all scales");
     }
@@ -86,7 +86,7 @@ public:
     updateAndLogScale(EARLY_TAILS, earlyTailsScale);
     updateAndLogScale(LATE_TAILS, lateTailsScale);
 #else
-    // In test environment, just update all scales
+    // In test/native environment, just update all scales
     earlyForeshotsScale.updateWeight();
     lateForeshotsScale.updateWeight();
     headsScale.updateWeight();
@@ -116,7 +116,7 @@ public:
     case LATE_TAILS:
       return lateTailsScale.getWeight();
     default:
-#ifndef UNIT_TEST
+#if !defined(UNIT_TEST) && !defined(NATIVE)
       if (logger) {
         logger->warning("Attempted to get weight for invalid state: %d", static_cast<int>(state));
       }
@@ -130,7 +130,7 @@ public:
    * @return Number of scales successfully reconnected.
    */
   int tryReconnectScales() {
-#ifndef UNIT_TEST
+#if !defined(UNIT_TEST) && !defined(NATIVE)
     int reconnectedCount = 0;
 
     if (logger) {
@@ -138,12 +138,18 @@ public:
     }
 
     // Try to reconnect each disconnected scale
-    if (!earlyForeshotsScale.isConnected() && earlyForeshotsScale.tryReconnect()) reconnectedCount++;
-    if (!lateForeshotsScale.isConnected() && lateForeshotsScale.tryReconnect()) reconnectedCount++;
-    if (!headsScale.isConnected() && headsScale.tryReconnect()) reconnectedCount++;
-    if (!heartsScale.isConnected() && heartsScale.tryReconnect()) reconnectedCount++;
-    if (!earlyTailsScale.isConnected() && earlyTailsScale.tryReconnect()) reconnectedCount++;
-    if (!lateTailsScale.isConnected() && lateTailsScale.tryReconnect()) reconnectedCount++;
+    if (!earlyForeshotsScale.isConnected() && earlyForeshotsScale.tryReconnect())
+      reconnectedCount++;
+    if (!lateForeshotsScale.isConnected() && lateForeshotsScale.tryReconnect())
+      reconnectedCount++;
+    if (!headsScale.isConnected() && headsScale.tryReconnect())
+      reconnectedCount++;
+    if (!heartsScale.isConnected() && heartsScale.tryReconnect())
+      reconnectedCount++;
+    if (!earlyTailsScale.isConnected() && earlyTailsScale.tryReconnect())
+      reconnectedCount++;
+    if (!lateTailsScale.isConnected() && lateTailsScale.tryReconnect())
+      reconnectedCount++;
 
     if (logger) {
       logger->info("Reconnected %d scales", reconnectedCount);
@@ -161,12 +167,18 @@ public:
    */
   int getConnectedScaleCount() const {
     int count = 0;
-    if (earlyForeshotsScale.isConnected()) count++;
-    if (lateForeshotsScale.isConnected()) count++;
-    if (headsScale.isConnected()) count++;
-    if (heartsScale.isConnected()) count++;
-    if (earlyTailsScale.isConnected()) count++;
-    if (lateTailsScale.isConnected()) count++;
+    if (earlyForeshotsScale.isConnected())
+      count++;
+    if (lateForeshotsScale.isConnected())
+      count++;
+    if (headsScale.isConnected())
+      count++;
+    if (heartsScale.isConnected())
+      count++;
+    if (earlyTailsScale.isConnected())
+      count++;
+    if (lateTailsScale.isConnected())
+      count++;
     return count;
   }
 
@@ -195,13 +207,13 @@ public:
   }
 
 private:
-#ifndef UNIT_TEST
+#if !defined(UNIT_TEST) && !defined(NATIVE)
   /**
    * Update a scale and log any failures.
    * @param state The distillation state corresponding to the scale.
    * @param scale The scale to update.
    */
-  void updateAndLogScale(DistillationState state, Scale& scale) {
+  void updateAndLogScale(DistillationState state, Scale &scale) {
     bool success = scale.updateWeight();
 
     if (!success && logger) {
@@ -214,8 +226,9 @@ private:
    * @param state The distillation state corresponding to the scale.
    * @param scale The scale to check.
    */
-  void logScaleStatus(DistillationState state, const Scale& scale) {
-    if (!logger) return;
+  void logScaleStatus(DistillationState state, const Scale &scale) {
+    if (!logger)
+      return;
 
     if (scale.isConnected()) {
       logger->info("Scale for state %s is connected", stateToString(state));
@@ -229,19 +242,30 @@ private:
    * @param state The distillation state.
    * @return String representation of the state.
    */
-  const char* stateToString(DistillationState state) const {
+  const char *stateToString(DistillationState state) const {
     switch (state) {
-    case EARLY_FORESHOTS: return "EARLY_FORESHOTS";
-    case LATE_FORESHOTS: return "LATE_FORESHOTS";
-    case HEADS: return "HEADS";
-    case HEARTS: return "HEARTS";
-    case EARLY_TAILS: return "EARLY_TAILS";
-    case LATE_TAILS: return "LATE_TAILS";
-    case OFF: return "OFF";
-    case HEAT_UP: return "HEAT_UP";
-    case STABILIZING: return "STABILIZING";
-    case FINALIZING: return "FINALIZING";
-    default: return "UNKNOWN";
+    case EARLY_FORESHOTS:
+      return "EARLY_FORESHOTS";
+    case LATE_FORESHOTS:
+      return "LATE_FORESHOTS";
+    case HEADS:
+      return "HEADS";
+    case HEARTS:
+      return "HEARTS";
+    case EARLY_TAILS:
+      return "EARLY_TAILS";
+    case LATE_TAILS:
+      return "LATE_TAILS";
+    case OFF:
+      return "OFF";
+    case HEAT_UP:
+      return "HEAT_UP";
+    case STABILIZING:
+      return "STABILIZING";
+    case FINALIZING:
+      return "FINALIZING";
+    default:
+      return "UNKNOWN";
     }
   }
 #endif

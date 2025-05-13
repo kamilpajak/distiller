@@ -3,6 +3,7 @@
 
 #ifdef UNIT_TEST
 #include <gmock/gmock.h>
+#include <string.h>
 
 // ArduinoMock namespace for time functions
 namespace ArduinoMock {
@@ -25,6 +26,34 @@ void advanceMillis(unsigned long millisToAdvance);
 const int OUTPUT = 1;
 const int HIGH = 1;
 const int LOW = 0;
+const int SS = 10;              // Default SPI SS pin
+const int CHIP_SELECT_PIN = 10; // Default chip select pin for SD
+
+#ifndef FILE_WRITE
+#define FILE_WRITE "w" // File write mode
+#endif
+
+// Arduino delay() function
+#ifndef DELAY_DEFINED
+#define DELAY_DEFINED
+inline void delay(unsigned long ms) {
+  // No need to implement for tests
+}
+#endif
+
+// Mock Serial class for unit tests
+class SerialClass {
+public:
+  void begin(unsigned long baud) {}
+  size_t print(const char *str) { return strlen(str); }
+  size_t println(const char *str) { return strlen(str) + 1; }
+  size_t print(float val, int format = 2) { return 1; }
+  size_t println(float val, int format = 2) { return 2; }
+  bool available() { return false; }
+};
+
+// Create a global Serial instance
+static SerialClass Serial;
 
 // ArduinoMockFixture class for pin operations
 class ArduinoMockFixture {

@@ -1,7 +1,50 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
-#include "../include/TaskManagerIO.h"
+// Include TaskManagerIO.h only if not included elsewhere
+#if !defined(UNIT_TEST) && !defined(NATIVE)
+// For production builds, TaskManagerIO.h is already included in hardware_interfaces.h
+#else
+// For test and native builds, include it here
+#include <TaskManagerIO.h>
+#endif
+
+// Define NATIVE for native builds if not already defined
+#if defined(PLATFORMIO) && !defined(ARDUINO) && !defined(UNIT_TEST)
+#define NATIVE
+#endif
+
+// Hardware platform constants
+#if defined(UNIT_TEST) || defined(NATIVE)
+// Constants that might be needed for unit testing or native builds
+// but are typically defined in Arduino hardware
+#ifndef CHIP_SELECT_PIN
+#define CHIP_SELECT_PIN 4
+#endif
+
+#define FILE_READ "r"
+#define FILE_WRITE "w"
+#define FILE_APPEND "a"
+
+// Define pinMode constants if not already defined
+#ifndef INPUT
+#define INPUT 0
+#endif
+
+#ifndef OUTPUT
+#define OUTPUT 1
+#endif
+
+#ifndef INPUT_PULLUP
+#define INPUT_PULLUP 2
+#endif
+
+// Define serial constants if not already defined
+#ifndef SERIAL_8N1
+#define SERIAL_8N1 0
+#endif
+
+#endif // defined(UNIT_TEST) || defined(NATIVE)
 
 // Density constants
 const double ALCOHOL_DENSITY = 0.868; // Density of alcohol in g/ml.
@@ -75,10 +118,10 @@ const float LATE_TAILS_VOLUME_ML = 600.0F;
 const float HIGH_FLOW_RATE_ML_PER_MIN = 33.0F;
 const float LOW_FLOW_RATE_ML_PER_MIN = 10.0F;
 
-// Temperature constants
+// Temperature constants (all in Celsius)
 const float TEMPERATURE_STABILIZATION_THRESHOLD_C = 2.0F;
 const float SUDDEN_TEMPERATURE_INCREASE_THRESHOLD_C = 0.1F;
-const float MIN_TEMPERATURE_THRESHOLD_C = 40.0F;
+const float MIN_TEMPERATURE_THRESHOLD_C = 40.0F; // Minimum temperature to proceed from heating phase
 const float TEMPERATURE_COMPARISON_TOLERANCE = 0.001F;
 
 // Time conversion constants

@@ -46,26 +46,18 @@ public:
   virtual ~DistillationStateManager() = default;
 
   // Static method to control access to the singleton instance.
-  static DistillationStateManager &getInstance() {
-    static DistillationStateManager instance; // Guaranteed to be destroyed.
-    return instance;
-  }
+  static DistillationStateManager &getInstance();
 
-  void setState(DistillationState newState) {
-    currentState = newState;
-    if (newState == HEAT_UP || newState == STABILIZING || newState == FINALIZING) {
-      startTime = millis();
-    }
-  }
+  void setState(DistillationState newState);
 
-  [[nodiscard]] DistillationState getState() const { return currentState; }
+  [[nodiscard]] DistillationState getState() const;
 
-  [[nodiscard]] unsigned long getElapsedTime() const { return millis() - startTime; }
+  [[nodiscard]] unsigned long getElapsedTime() const;
 
 // For testing purposes only
 #ifdef UNIT_TEST
-  void setStartTime(unsigned long time) { startTime = time; }
-  unsigned long getStartTime() const { return startTime; }
+  void setStartTime(unsigned long time);
+  unsigned long getStartTime() const;
 #endif
 };
 
