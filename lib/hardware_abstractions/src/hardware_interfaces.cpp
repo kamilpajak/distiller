@@ -6,52 +6,32 @@
 // For production environment, include the real libraries
 #if !defined(NATIVE) && !defined(UNIT_TEST)
 // Explicitly include the real Arduino headers here in the .cpp file, not in the .h file
-#include <Arduino.h>  // Real Arduino.h from framework
-#include <SPI.h>      // Real SPI.h from framework
-#include <SD.h>       // Real SD.h from framework
-#include <HX711.h>    // Real HX711.h from library
+#include <Arduino.h> // Real Arduino.h from framework
+#include <HX711.h>   // Real HX711.h from library
+#include <SD.h>      // Real SD.h from framework
+#include <SPI.h>     // Real SPI.h from framework
 
 // ArduinoSerialInterface implementations for production
-void ArduinoSerialInterface::begin(unsigned long baud) {
-  Serial.begin(baud);
-}
+void ArduinoSerialInterface::begin(unsigned long baud) { Serial.begin(baud); }
 
-size_t ArduinoSerialInterface::print(const char *str) {
-  return Serial.print(str);
-}
+size_t ArduinoSerialInterface::print(const char *str) { return Serial.print(str); }
 
-size_t ArduinoSerialInterface::println(const char *str) {
-  return Serial.println(str);
-}
+size_t ArduinoSerialInterface::println(const char *str) { return Serial.println(str); }
 
-size_t ArduinoSerialInterface::print(float val, int format) {
-  return Serial.print(val, format);
-}
+size_t ArduinoSerialInterface::print(float val, int format) { return Serial.print(val, format); }
 
-size_t ArduinoSerialInterface::println(float val, int format) {
-  return Serial.println(val, format);
-}
+size_t ArduinoSerialInterface::println(float val, int format) { return Serial.println(val, format); }
 
-bool ArduinoSerialInterface::available() {
-  return Serial.available() > 0;
-}
+bool ArduinoSerialInterface::available() { return Serial.available() > 0; }
 
 // ArduinoSDInterface implementations for production
-bool ArduinoSDInterface::begin(uint8_t csPin) {
-  return SD.begin(csPin);
-}
+bool ArduinoSDInterface::begin(uint8_t csPin) { return SD.begin(csPin); }
 
-File ArduinoSDInterface::open(const char *filename, const char *mode) {
-  return SD.open(filename, mode);
-}
+File ArduinoSDInterface::open(const char *filename, const char *mode) { return SD.open(filename, mode); }
 
-bool ArduinoSDInterface::exists(const char *filename) {
-  return SD.exists(filename);
-}
+bool ArduinoSDInterface::exists(const char *filename) { return SD.exists(filename); }
 
-bool ArduinoSDInterface::mkdir(const char *filename) {
-  return SD.mkdir(filename);
-}
+bool ArduinoSDInterface::mkdir(const char *filename) { return SD.mkdir(filename); }
 
 // HX711ScaleInterface implementations for production
 HX711ScaleInterface::HX711ScaleInterface(int dout, int sck) : dataPin(dout), clockPin(sck) {
@@ -61,43 +41,29 @@ HX711ScaleInterface::HX711ScaleInterface(int dout, int sck) : dataPin(dout), clo
 
 HX711ScaleInterface::~HX711ScaleInterface() {
   if (scalePtr) {
-    delete static_cast<HX711*>(scalePtr);
+    delete static_cast<HX711 *>(scalePtr);
     scalePtr = nullptr;
   }
 }
 
-void HX711ScaleInterface::begin() {
-  static_cast<HX711*>(scalePtr)->begin(dataPin, clockPin);
-}
+void HX711ScaleInterface::begin() { static_cast<HX711 *>(scalePtr)->begin(dataPin, clockPin); }
 
-bool HX711ScaleInterface::is_ready() {
-  return static_cast<HX711*>(scalePtr)->is_ready();
-}
+bool HX711ScaleInterface::is_ready() { return static_cast<HX711 *>(scalePtr)->is_ready(); }
 
-void HX711ScaleInterface::set_scale(float scaleValue) {
-  static_cast<HX711*>(scalePtr)->set_scale(scaleValue);
-}
+void HX711ScaleInterface::set_scale(float scaleValue) { static_cast<HX711 *>(scalePtr)->set_scale(scaleValue); }
 
-void HX711ScaleInterface::tare(uint8_t times) {
-  static_cast<HX711*>(scalePtr)->tare(times);
-}
+void HX711ScaleInterface::tare(uint8_t times) { static_cast<HX711 *>(scalePtr)->tare(times); }
 
-float HX711ScaleInterface::get_units(uint8_t times) {
-  return static_cast<HX711*>(scalePtr)->get_units(times);
-}
+float HX711ScaleInterface::get_units(uint8_t times) { return static_cast<HX711 *>(scalePtr)->get_units(times); }
 
-void HX711ScaleInterface::power_down() {
-  static_cast<HX711*>(scalePtr)->power_down();
-}
+void HX711ScaleInterface::power_down() { static_cast<HX711 *>(scalePtr)->power_down(); }
 
-void HX711ScaleInterface::power_up() {
-  static_cast<HX711*>(scalePtr)->power_up();
-}
+void HX711ScaleInterface::power_up() { static_cast<HX711 *>(scalePtr)->power_up(); }
 
 #else
 // For test/native environments, we use mock implementations
 // We include the Arduino mock header for test/native builds
-#include <Arduino.h>  // This will be the mock Arduino.h
+#include <Arduino.h> // This will be the mock Arduino.h
 
 // ArduinoSerialInterface implementations for test/native
 void ArduinoSerialInterface::begin(unsigned long baud) {

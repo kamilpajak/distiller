@@ -12,68 +12,68 @@
 // Forward declarations of Arduino types for production builds
 // These symbols are defined in the real Arduino libraries
 #if !defined(UNIT_TEST) && !defined(NATIVE)
-    // These are already defined in the real Arduino.h
-    class HardwareSerial;
-    extern HardwareSerial Serial;
+// These are already defined in the real Arduino.h
+class HardwareSerial;
+extern HardwareSerial Serial;
 
-    // File is defined in SD.h
-    class File;
+// File is defined in SD.h
+class File;
 
-    // SDClass is defined in SD.h
-    class SDClass;
-    extern SDClass SD;
+// SDClass is defined in SD.h
+class SDClass;
+extern SDClass SD;
 
-    // HX711 is defined in HX711.h
-    class HX711;
+// HX711 is defined in HX711.h
+class HX711;
 
-    // Define SS if not already defined
-    #ifndef SS
-    #define SS 10
-    #endif
+// Define SS if not already defined
+#ifndef SS
+#define SS 10
+#endif
 
-    // FILE_WRITE for SD card operations
-    #ifndef FILE_WRITE
-    #define FILE_WRITE "w"
-    #endif
+// FILE_WRITE for SD card operations
+#ifndef FILE_WRITE
+#define FILE_WRITE "w"
+#endif
 #else
-    // For test/native builds, we use our mock implementations
-    #include <Arduino.h>
+// For test/native builds, we use our mock implementations
+#include <Arduino.h>
 
-    // Define File class for test/native builds
-    #ifndef File_defined
-    #define File_defined
-    class File {
-    public:
-      File() {}
-      operator bool() const { return true; }
-      bool println(const char *message) { return true; }
-      bool print(const char *message) { return true; }
-      bool flush() { return true; }
-    };
-    #endif
+// Define File class for test/native builds
+#ifndef File_defined
+#define File_defined
+class File {
+public:
+  File() {}
+  operator bool() const { return true; }
+  bool println(const char *message) { return true; }
+  bool print(const char *message) { return true; }
+  bool flush() { return true; }
+};
+#endif
 
-    // Define SDClass for test/native builds
-    #ifndef SDClass_defined
-    #define SDClass_defined
-    class SDClass {
-    public:
-      bool begin(uint8_t csPin = SS) { return true; }
-      File open(const char *filename, const char *mode) { return File(); }
-      bool exists(const char *filename) { return true; }
-      bool mkdir(const char *filename) { return true; }
-    };
-    extern SDClass SD;
-    #endif
+// Define SDClass for test/native builds
+#ifndef SDClass_defined
+#define SDClass_defined
+class SDClass {
+public:
+  bool begin(uint8_t csPin = SS) { return true; }
+  File open(const char *filename, const char *mode) { return File(); }
+  bool exists(const char *filename) { return true; }
+  bool mkdir(const char *filename) { return true; }
+};
+extern SDClass SD;
+#endif
 
-    // Define SS if not already defined
-    #ifndef SS
-    #define SS 10
-    #endif
+// Define SS if not already defined
+#ifndef SS
+#define SS 10
+#endif
 
-    // FILE_WRITE for SD card operations
-    #ifndef FILE_WRITE
-    #define FILE_WRITE "w"
-    #endif
+// FILE_WRITE for SD card operations
+#ifndef FILE_WRITE
+#define FILE_WRITE "w"
+#endif
 #endif
 
 /**
@@ -203,12 +203,12 @@ public:
    */
   virtual bool begin(uint8_t csPin = 10) = 0; // Use 10 as default SS
 
-/**
- * @brief Open a file on the SD card.
- * @param filename - Name of file to open
- * @param mode - File mode (read/write) - can be a string (like FILE_WRITE) or uint8_t constant
- * @return File object
- */
+  /**
+   * @brief Open a file on the SD card.
+   * @param filename - Name of file to open
+   * @param mode - File mode (read/write) - can be a string (like FILE_WRITE) or uint8_t constant
+   * @return File object
+   */
   virtual File open(const char *filename, const char *mode) = 0;
 
   /**
@@ -341,11 +341,11 @@ private:
     }
     void set_mock_weight(float weight) { mockWeight = weight; }
   };
-  HX711 scale;  /**< Underlying mock HX711 object */
-#else 
+  HX711 scale; /**< Underlying mock HX711 object */
+#else
   // For production builds, HX711 is defined in HX711.h included in main.cpp
   // The implementation is in the .cpp file
-  void* scalePtr; // We'll cast this to HX711* in the implementation
+  void *scalePtr; // We'll cast this to HX711* in the implementation
 #endif
   int dataPin;  /**< Data pin for HX711 module */
   int clockPin; /**< Clock pin for HX711 module */

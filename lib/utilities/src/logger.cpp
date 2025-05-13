@@ -44,8 +44,8 @@ void Logger::begin(LogLevel level) {
   if (sdEnabled && sdInterface) {
     if (sdInterface->begin(CHIP_SELECT_PIN)) {
       sdAvailable = true;
-      
-      #if defined(UNIT_TEST) || defined(NATIVE)
+
+#if defined(UNIT_TEST) || defined(NATIVE)
       // For test/native builds, use File directly
       logFile = sdInterface->open(logFileName, FILE_WRITE);
       if (logFile) {
@@ -54,17 +54,17 @@ void Logger::begin(LogLevel level) {
         log(ERROR, "Failed to open log file on SD card");
         sdAvailable = false;
       }
-      #else
+#else
       // For production, use the implementation defined in the source file
       File logFile = sdInterface->open(logFileName, FILE_WRITE);
       if (logFile) {
-        logFilePtr = (void*)(&logFile);
+        logFilePtr = (void *)(&logFile);
         log(INFO, "Logging to SD card started");
       } else {
         log(ERROR, "Failed to open log file on SD card");
         sdAvailable = false;
       }
-      #endif
+#endif
     } else {
       log(ERROR, "SD card initialization failed");
       sdAvailable = false;
@@ -97,20 +97,20 @@ void Logger::log(LogLevel level, const char *format, ...) {
 
   // Output to SD card if available
   if (sdEnabled && sdAvailable) {
-    #if defined(UNIT_TEST) || defined(NATIVE)
+#if defined(UNIT_TEST) || defined(NATIVE)
     // For test/native builds, use File directly
     if (logFile) {
       logFile.println(logLine);
       logFile.flush();
     }
-    #else
+#else
     // For production, use the File pointer
     if (logFilePtr) {
-      File* filePtr = static_cast<File*>(logFilePtr);
+      File *filePtr = static_cast<File *>(logFilePtr);
       filePtr->println(logLine);
       filePtr->flush();
     }
-    #endif
+#endif
   }
 }
 

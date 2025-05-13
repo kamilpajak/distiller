@@ -16,30 +16,30 @@
  */
 class Logger {
 public:
-  // Log levels 
+  // Log levels
   // Rename DEBUG to DEBUG_LEVEL to avoid conflict with Arduino's DEBUG macro
   enum LogLevel { DEBUG_LEVEL, INFO, WARNING, ERROR, CRITICAL };
 
 private:
   static constexpr int MAX_LOG_LINE = 256;
-  
-  // Chip select pin for SD card
-  #ifndef CHIP_SELECT_PIN
-  #define CHIP_SELECT_PIN 10
-  #endif
+
+// Chip select pin for SD card
+#ifndef CHIP_SELECT_PIN
+#define CHIP_SELECT_PIN 10
+#endif
 
   LogLevel minLevel = INFO;
   bool sdEnabled = false;
   bool sdAvailable = false;
-  
-  // Forward declare File to avoid dependencies in header
-  #if defined(UNIT_TEST) || defined(NATIVE)
+
+// Forward declare File to avoid dependencies in header
+#if defined(UNIT_TEST) || defined(NATIVE)
   File logFile;
-  #else
+#else
   // For production, we'll handle the File in the implementation
-  void* logFilePtr = nullptr; 
-  #endif
-  
+  void *logFilePtr = nullptr;
+#endif
+
   const char *logFileName = "distiller.log";
 
   // Hardware interfaces

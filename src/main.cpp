@@ -9,10 +9,10 @@
 // Explicitly skip including our Arduino.h in include/ directory
 #define ARDUINO_H
 #include <Arduino.h>
-#include <SPI.h>        // SPI must come before SD
-#include <SD.h>         // SD must come after SPI
-#include <TaskManagerIO.h>
 #include <HX711.h>
+#include <SD.h>  // SD must come after SPI
+#include <SPI.h> // SPI must come before SD
+#include <TaskManagerIO.h>
 
 // Now include our hardware interfaces after all Arduino libs are included
 // Include library headers from the library structure

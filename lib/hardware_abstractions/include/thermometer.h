@@ -41,16 +41,16 @@ public:
   OneWire(int pin) {}
   void begin() {}
   uint8_t reset() { return 1; }
-  void select(const uint8_t* addr) {}
+  void select(const uint8_t *addr) {}
   void write(uint8_t v) {}
-  void write_bytes(const uint8_t* buf, uint16_t count) {}
+  void write_bytes(const uint8_t *buf, uint16_t count) {}
   uint8_t read() { return 0; }
-  void read_bytes(uint8_t* buf, uint16_t count) {}
+  void read_bytes(uint8_t *buf, uint16_t count) {}
 };
 
 class DallasTemperature {
 public:
-  DallasTemperature(OneWire* wire) {}
+  DallasTemperature(OneWire *wire) {}
   void begin() {}
   void requestTemperatures() {}
   float getTempCByIndex(uint8_t index) { return 20.0f; }
